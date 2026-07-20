@@ -29,6 +29,10 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+  # electron-39 ist EOL aber von vesktop/bitwarden-desktop benötigt
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-39.8.10"
+  ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

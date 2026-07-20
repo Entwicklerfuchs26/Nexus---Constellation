@@ -11,10 +11,21 @@
 
   security.sudo.extraRules = [{
     users = [ "fuchs" ];
-    commands = [{
-      command = "/run/current-system/sw/bin/shutdown";
-      options = [ "NOPASSWD" ];
-    }];
+    commands = [
+      {
+        command = "/run/current-system/sw/bin/shutdown";
+        options = [ "NOPASSWD" ];
+      }
+      # nixos-rebuild dry-run: liest nur, baut nichts, ändert nichts am System
+      {
+        command = "/run/current-system/sw/bin/nixos-rebuild dry-run *";
+        options = [ "NOPASSWD" ];
+      }
+      {
+        command = "/run/current-system/sw/bin/nixos-rebuild dry-run";
+        options = [ "NOPASSWD" ];
+      }
+    ];
   }];
 
   services.openssh.enable = true;
