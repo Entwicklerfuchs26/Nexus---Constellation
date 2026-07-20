@@ -66,6 +66,7 @@
         # Module werden hier progressiv eingebunden:
         ./modules/core/base.nix
         ./modules/core/users.nix
+        ./modules/hardware/nvidia.nix
       ];
     };
   };
