@@ -64,6 +64,13 @@
 
   networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 ];
 
+  # Spielefestplatte (aus modules/software/gaming.nix ausgelagert)
+  fileSystems."/mnt/games" = {
+    device = "/dev/disk/by-uuid/5abc4798-aa86-48c6-bf31-64206749f67d";
+    fsType = "ext4";
+    options = [ "defaults" "nofail" "noauto" "x-systemd.automount" "x-systemd.device-timeout=5" ];
+  };
+
   # Hauptbenutzer (aus modules/core/users.nix ausgelagert)
   users.users.fuchs = {
     isNormalUser = true;
