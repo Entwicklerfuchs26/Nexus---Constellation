@@ -1,0 +1,26 @@
+[config]
+reload_apps = true
+[templates.waybar]
+input_path = "/home/fuchs/.config/waybar/style.css.templ"
+output_path = "/home/fuchs/.config/waybar/style.css"
+[templates.colors]
+input_path = "/home/fuchs/.config/matugen/colors.sh.templ"
+output_path = "/home/fuchs/.config/matugen/colors.sh"
+[templates.wlogout]
+input_path = "/home/fuchs/.config/wlogout/style.css.templ"
+output_path = "/home/fuchs/.config/wlogout/style.css"
+[templates.dock]
+input_path = "/home/fuchs/.config/nwg-dock-hyprland/style.css.templ"
+output_path = "/home/fuchs/.config/nwg-dock-hyprland/style.css"
+[templates.kdeglobals]
+input_path = "/home/fuchs/.config/matugen/kdeglobals.templ"
+output_path = "/home/fuchs/.config/kdeglobals"
+[templates.hyprlock]
+input_path = "/home/fuchs/.config/matugen/hyprlock.conf.templ"
+output_path = "/home/fuchs/.config/hypr/hyprlock.conf"
+[templates.rofi]
+input_path = "/home/fuchs/.config/rofi/theme.rasi.templ"
+output_path = "/home/fuchs/.config/rofi/theme.rasi"
+[templates.gtk4]
+input_path = "/home/fuchs/.config/gtk-4.0/gtk.css.templ"
+output_path = "/home/fuchs/.config/gtk-4.0/gtk.css"
