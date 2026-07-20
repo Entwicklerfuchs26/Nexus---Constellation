@@ -63,4 +63,20 @@
   };
 
   networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 ];
+
+  # Hauptbenutzer (aus modules/core/users.nix ausgelagert)
+  users.users.fuchs = {
+    isNormalUser = true;
+    description = "Entwicklerfuchs";
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "audio"
+      "video"
+      "input"
+      "bluetooth"
+      "i2c"
+    ];
+    shell = pkgs.bash;
+  };
 }
