@@ -75,6 +75,7 @@
         ./modules/desktop/hyprland.nix
         ./modules/ai/ollama.nix
         ./modules/ai/sojus.nix
+        ./modules/core/ldap.nix
       ];
     };
   };

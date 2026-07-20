@@ -64,6 +64,25 @@
 
   networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 ];
 
+  # SSSD LDAP-Konfiguration (aus modules/core/ldap.nix ausgelagert)
+  services.sssd.config = ''
+    [sssd]
+    domains = sternenhof.space
+    services = nss, pam
+
+    [domain/sternenhof.space]
+    id_provider = ldap
+    auth_provider = ldap
+    ldap_uri = ldap://darwin26.sternenhof.space:389
+    ldap_search_base = ou=users,dc=sternenhof,dc=space
+    ldap_bind_dn = cn=admin,dc=sternenhof,dc=space
+    ldap_bind_authtok_type = password
+    ldap_user_object_class = inetOrgPerson
+    ldap_user_name = uid
+    enumerate = true
+    cache_credentials = true
+  '';
+
   # Spielefestplatte (aus modules/software/gaming.nix ausgelagert)
   fileSystems."/mnt/games" = {
     device = "/dev/disk/by-uuid/5abc4798-aa86-48c6-bf31-64206749f67d";
