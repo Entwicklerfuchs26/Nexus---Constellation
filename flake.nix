@@ -70,6 +70,7 @@
         ./modules/core/printing.nix
         ./modules/software/software.nix
         ./modules/software/gaming.nix
+        ./modules/software/docker.nix
       ];
     };
   };

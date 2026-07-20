@@ -72,6 +72,7 @@
   };
 
   # Hauptbenutzer (aus modules/core/users.nix ausgelagert)
+  # docker-Gruppe: aus modules/software/docker.nix zusammengeführt
   users.users.fuchs = {
     isNormalUser = true;
     description = "Entwicklerfuchs";
@@ -83,6 +84,7 @@
       "input"
       "bluetooth"
       "i2c"
+      "docker"
     ];
     shell = pkgs.bash;
   };
