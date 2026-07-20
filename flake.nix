@@ -73,6 +73,7 @@
         ./modules/software/docker.nix
         ./modules/software/davinci.nix
         ./modules/desktop/hyprland.nix
+        ./modules/ai/ollama.nix
       ];
     };
   };
