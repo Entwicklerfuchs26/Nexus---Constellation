@@ -68,6 +68,7 @@
         ./modules/core/users.nix
         ./modules/hardware/nvidia.nix
         ./modules/core/printing.nix
+        ./modules/software/software.nix
       ];
     };
   };
