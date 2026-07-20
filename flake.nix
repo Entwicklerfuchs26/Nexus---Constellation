@@ -72,6 +72,7 @@
         ./modules/software/gaming.nix
         ./modules/software/docker.nix
         ./modules/software/davinci.nix
+        ./modules/desktop/hyprland.nix
       ];
     };
   };
