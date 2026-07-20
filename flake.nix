@@ -76,6 +76,7 @@
         ./modules/ai/ollama.nix
         ./modules/ai/sojus.nix
         ./modules/core/ldap.nix
+        ./modules/software/affinity.nix
       ];
     };
   };
