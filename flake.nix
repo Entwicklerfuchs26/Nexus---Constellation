@@ -74,6 +74,7 @@
         ./modules/software/davinci.nix
         ./modules/desktop/hyprland.nix
         ./modules/ai/ollama.nix
+        ./modules/ai/sojus.nix
       ];
     };
   };
