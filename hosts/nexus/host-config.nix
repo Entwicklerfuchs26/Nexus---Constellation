@@ -32,7 +32,7 @@
   services.openssh.settings.PasswordAuthentication = true;
 
   # Sternenhof Root-CA – Pfad muss auf lokale certs/ im Config-Repo zeigen
-  # security.pki.certificateFiles = [ ./certs/sternenhof-ca-2026.crt ];
+  security.pki.certificateFiles = [ ../../certs/sternenhof-ca-2026.crt ];
 
   networking.hosts = {
     "192.168.1.26" = [
