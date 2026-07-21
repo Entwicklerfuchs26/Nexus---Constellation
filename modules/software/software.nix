@@ -51,7 +51,6 @@ programs.obs-studio = {
     # Grafik & 3D
     blender
     krita
-    freecad
     darktable
 
     # Media
