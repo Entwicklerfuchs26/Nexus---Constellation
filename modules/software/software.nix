@@ -69,18 +69,12 @@ programs.obs-studio = {
     # Cloud & Sync
     nextcloud-client
 
-    # Gaming
-    prismlauncher
-
     # System
     htop
     fastfetch
     pavucontrol
-    mission-center
     openrgb
     rpi-imager
-    matugen
-    ffmpeg
 
     # VPN
     proton-vpn
@@ -106,7 +100,6 @@ programs.obs-studio = {
     pipewire
     wireplumber
     pulseaudio
-    wlogout
 
     # GTK Theme & Icons
     adw-gtk3
@@ -114,7 +107,6 @@ programs.obs-studio = {
     bibata-cursors
     kdePackages.breeze
     kdePackages.plasma-integration
-    kdePackages.qqc2-breeze-style
     papirus-folders
     gtk3
     pwvucontrol

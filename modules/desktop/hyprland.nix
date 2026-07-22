@@ -31,7 +31,6 @@ services.displayManager.defaultSession = "hyprland";
     hypridle
     awww.packages.${pkgs.system}.default
     waybar
-    nwg-dock-hyprland
     nwg-displays
     wofi
     kitty
@@ -53,7 +52,6 @@ services.displayManager.defaultSession = "hyprland";
     sddm-astronaut
     kdePackages.kirigami
     kdePackages.qqc2-breeze-style
-    kdePackages.kirigami
     skwd-daemon.packages.x86_64-linux.default
     qt6.qtimageformats
   ];
