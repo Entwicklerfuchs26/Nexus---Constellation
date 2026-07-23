@@ -55,6 +55,12 @@
   };
 
   home.file.".config/wlogout/style.css.templ".source = ./files/wlogout-style.css.templ;
+  home.file.".config/wlogout/icons/lock.png".source = ./files/wlogout-icons/lock.png;
+  home.file.".config/wlogout/icons/logout.png".source = ./files/wlogout-icons/logout.png;
+  home.file.".config/wlogout/icons/suspend.png".source = ./files/wlogout-icons/suspend.png;
+  home.file.".config/wlogout/icons/reboot.png".source = ./files/wlogout-icons/reboot.png;
+  home.file.".config/wlogout/icons/shutdown.png".source = ./files/wlogout-icons/shutdown.png;
+  home.file.".config/wlogout/icons/hibernate.png".source = ./files/wlogout-icons/hibernate.png;
   home.file.".config/nwg-dock-hyprland/style.css.templ".source = ./files/nwg-dock-style.css.templ;
   home.file.".config/nwg-dock-hyprland/pinned" = {
     source = ./files/nwg-dock-pinned;
