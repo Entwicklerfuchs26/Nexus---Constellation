@@ -84,16 +84,16 @@ window#waybar > box {
   min-width: 20px;
   border-radius: 999px;
   margin: 6px 8px;
-  padding: 4px 4px 4px 22px;
+  padding: 4px 10px;
   font-size: 12px;
   background-color: rgba({{colors.surface_container.default.red}}, {{colors.surface_container.default.green}}, {{colors.surface_container.default.blue}}, 0.9);
   border: 1px solid rgba({{colors.outline.default.red}}, {{colors.outline.default.green}}, {{colors.outline.default.blue}}, 0.35);
   color: {{colors.primary.default.hex}};
-  transition: padding 0.3s ease-in-out, background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
 }
 
 #custom-theme-toggle.light {
-  padding: 4px 22px 4px 4px;
   background-color: rgba({{colors.primary_container.default.red}}, {{colors.primary_container.default.green}}, {{colors.primary_container.default.blue}}, 0.9);
   color: {{colors.on_primary_container.default.hex}};
+  border-color: rgba({{colors.primary.default.red}}, {{colors.primary.default.green}}, {{colors.primary.default.blue}}, 0.4);
 }

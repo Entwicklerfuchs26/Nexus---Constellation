@@ -5,8 +5,18 @@ CACHE_DIR="$HOME/.cache/sojus"
 STATE_FILE="$CACHE_DIR/colorscheme"
 OVERRIDE_FILE="$CACHE_DIR/colorscheme-override"
 CONFIG="$HOME/.config/skwd-wall/config.json"
+LOCK_FILE="$CACHE_DIR/toggle.lock"
 
 mkdir -p "$CACHE_DIR"
+
+# Waehrend ein Wechsel laeuft (mehrere Sekunden) blockieren weitere Aufrufe
+# sofort statt zu ueberlappen - verhindert Race-Zustaende zwischen zwei
+# gleichzeitigen skwd/matugen-Laeufen.
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+    echo "Wechsel laeuft bereits, ignoriere Aufruf." >&2
+    exit 0
+fi
 
 current_mode() {
     cat "$STATE_FILE" 2>/dev/null || echo "dark"
