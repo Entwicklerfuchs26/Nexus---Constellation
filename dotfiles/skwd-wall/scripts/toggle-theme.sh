@@ -53,6 +53,11 @@ wallpaper_dir = config['paths']['wallpaper']
 status = json.loads(__import__('subprocess').check_output(['skwd', 'status']))
 print(f\"{wallpaper_dir}/{status['current_wallpaper']}\")
 ")"
+# skwd-daemon liefert beim ersten Apply nach einem Mode-Wechsel manchmal noch
+# Farben vom vorherigen Rendering (Race mit der Wallpaper-Transition-Animation).
+# Ein zweiter, identischer Call direkt danach ist reproduzierbar korrekt.
+skwd wall apply "{\"path\":\"$wallpaper_path\"}" > /dev/null
+sleep 0.5
 skwd wall apply "{\"path\":\"$wallpaper_path\"}"
 
 echo "$target" > "$STATE_FILE"
