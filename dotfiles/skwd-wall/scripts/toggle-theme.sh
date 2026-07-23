@@ -53,12 +53,13 @@ with open(path, "w") as f:
     f.write("\n")
 EOF
 
+# "skwd status" liefert current_wallpaper seit einem Daemon-Update
+# zuverlaessig als null zurueck. "skwd wall outputs" hat den tatsaechlichen
+# Pfad im Feld outputs["*"]["path"], daher direkt von dort lesen.
 wallpaper_path="$(python3 -c "
-import json
-config = json.load(open('$CONFIG'))
-wallpaper_dir = config['paths']['wallpaper']
-status = json.loads(__import__('subprocess').check_output(['skwd', 'status']))
-print(f\"{wallpaper_dir}/{status['current_wallpaper']}\")
+import json, subprocess
+outputs = json.loads(subprocess.check_output(['skwd', 'wall', 'outputs']))['outputs']
+print(outputs['*']['path'])
 ")"
 # skwd-daemons interner externalMatugenCommand-Lauf rendert das gtk4-Template
 # (letztes Template in ~/.config/matugen/config.toml) nicht zuverlaessig mit,
