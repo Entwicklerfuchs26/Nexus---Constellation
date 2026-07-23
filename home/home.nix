@@ -16,6 +16,8 @@
       ./rofi.nix
       ./mimeapps.nix
       ./theme-schedule.nix
+      ./quickshell-sidebar.nix
+      ./quickshell-dashboard.nix
     ];
     home.packages = with pkgs; [
       vivaldi
