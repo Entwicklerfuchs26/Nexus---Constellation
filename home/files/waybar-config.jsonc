@@ -21,7 +21,7 @@
 "custom/power": {
   "format": "⏻",
   "tooltip": false,
-  "on-click": "wlogout -b 5 -c 0 -r 0 -m 200"
+  "on-click": "wlogout -b 6 -c 0 -r 0 -m 200"
 },
 
   "custom/launcher": {
