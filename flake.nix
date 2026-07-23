@@ -26,24 +26,22 @@
       url = "github:liixini/skwd-wall";
     };
 
-    # TODO: agenix — Secrets-Management
-    # agenix = {
-    #   url = "github:ryantm/agenix";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    #   inputs.home-manager.follows = "home-manager";
-    # };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
 
-    # TODO: sojus-core — KI-Agent NixOS-Modul
-    # sojus-core = {
-    #   url = "path:/home/fuchs/sojus-core";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    sojus-core = {
+      url = "path:/home/fuchs/sojus-core";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # TODO: KI-Repo — eigene KI-Tooling / Automatisierungs-Module
     # ki-modules.url = "github:Entwicklerfuchs26/ki-modules";
   };
 
-  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, ... }@inputs:
   let
     system = "x86_64-linux";
   in
@@ -62,6 +60,8 @@
         }
 
         skwd-wall.nixosModules.default
+        agenix.nixosModules.default
+        sojus-core.nixosModules.nexus
 
         # Module werden hier progressiv eingebunden:
         ./modules/core/base.nix
