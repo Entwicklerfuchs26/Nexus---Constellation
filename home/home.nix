@@ -15,6 +15,7 @@
       ./desktop.nix
       ./rofi.nix
       ./mimeapps.nix
+      ./theme-schedule.nix
     ];
     home.packages = with pkgs; [
       vivaldi
@@ -34,7 +35,7 @@
     programs.bash = {
       enable = true;
       shellAliases = {
-        rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#nexus";
+        rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/nixos-config#nexus";
         update = "sudo nix flake update /etc/nixos";
         config = "cd /etc/nixos";
         ssh = "TERM=xterm-256color ssh -t";
