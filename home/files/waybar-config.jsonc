@@ -82,7 +82,7 @@
   "exec": "mode=$(cat /home/fuchs/.cache/sojus/colorscheme 2>/dev/null || echo dark); if [ \"$mode\" = \"light\" ]; then echo '{\"text\":\"☀️\",\"class\":\"light\",\"tooltip\":\"Light Mode\"}'; else echo '{\"text\":\"🌙\",\"class\":\"dark\",\"tooltip\":\"Dark Mode\"}'; fi",
   "interval": 30,
   "signal": 8,
-  "on-click": "/home/fuchs/.config/skwd-wall/scripts/toggle-theme.sh > /home/fuchs/.cache/sojus/toggle.log 2>&1",
+  "on-click": "setsid -f /home/fuchs/.config/skwd-wall/scripts/toggle-theme.sh",
   "tooltip": true
 },
 
