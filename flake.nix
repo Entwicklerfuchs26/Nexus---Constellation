@@ -75,6 +75,11 @@
         ./modules/desktop/hyprland.nix
         ./modules/ai/ollama.nix
         ./modules/ai/sojus.nix
+        # Pausiert 2026-07-23: fraßen zusammen ~6,7GB von 8GB VRAM im Leerlauf
+        # (RTX 2070, 8GB). Voice-Layer-Integration läuft jetzt über Hermes statt
+        # sojus-pipeline.py — wieder einkommentieren sobald die Anbindung steht.
+        # ./modules/ai/chatterbox-tts.nix
+        # ./modules/ai/whisper-stt.nix
         ./modules/core/ldap.nix
         ./modules/software/affinity.nix
         ./home/home.nix
