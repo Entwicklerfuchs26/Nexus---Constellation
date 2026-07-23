@@ -7,7 +7,7 @@ from gi.repository import Gtk, Adw, GLib, Gdk
 import subprocess, threading, json, re, os, tempfile
 from collections import defaultdict
 
-CONFIG_FILE = "/etc/nixos/nexus/user-packages.nix"
+CONFIG_FILE = "/etc/nixos/nixos-config/pkgs/user-packages.nix"
 
 
 def read_packages():
@@ -101,7 +101,7 @@ class MainWin(Adw.ApplicationWindow):
         subprocess.Popen([
             'kitty', '--title', 'NixOS Rebuild', '--hold',
             'bash', '-c',
-            'git -C /etc/nixos add -A && sudo nixos-rebuild switch --flake /etc/nixos#nexus'
+            'git -C /etc/nixos/nixos-config add -A && sudo nixos-rebuild switch --flake /etc/nixos/nixos-config#nexus'
         ])
 
     def add_pkg(self, name):
@@ -378,7 +378,7 @@ class EditorPage(Gtk.Box):
     def _on_new_file(self, _):
         dialog = Adw.AlertDialog()
         dialog.set_heading('Neue Nix-Datei')
-        dialog.set_body('Pfad relativ zu /etc/nixos (z.B. nexus/meine-datei.nix)')
+        dialog.set_body('Pfad relativ zu /etc/nixos/nixos-config (z.B. modules/meine-datei.nix)')
         dialog.add_response('cancel', 'Abbrechen')
         dialog.add_response('create', 'Erstellen')
         dialog.set_response_appearance('create', Adw.ResponseAppearance.SUGGESTED)
@@ -386,7 +386,7 @@ class EditorPage(Gtk.Box):
         dialog.set_close_response('cancel')
 
         entry = Gtk.Entry()
-        entry.set_placeholder_text('nexus/meine-datei.nix')
+        entry.set_placeholder_text('modules/meine-datei.nix')
         entry.set_margin_top(8)
         dialog.set_extra_child(entry)
 
@@ -401,7 +401,7 @@ class EditorPage(Gtk.Box):
             return
         if not rel_path.endswith('.nix'):
             rel_path += '.nix'
-        full_path = f'/etc/nixos/{rel_path}'
+        full_path = f'/etc/nixos/nixos-config/{rel_path}'
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         template = '{ config, pkgs, ... }:\n{\n}\n'
         try:
@@ -427,14 +427,14 @@ class EditorPage(Gtk.Box):
 
         try:
             result = subprocess.run(
-                ['find', '/etc/nixos', '-name', '*.nix', '-not', '-path', '*/.git/*'],
+                ['find', '/etc/nixos/nixos-config', '-name', '*.nix', '-not', '-path', '*/.git/*'],
                 capture_output=True, text=True
             )
             files = sorted(result.stdout.strip().splitlines())
 
             dirs = defaultdict(list)
             for path in files:
-                rel = path.replace('/etc/nixos/', '')
+                rel = path.replace('/etc/nixos/nixos-config/', '')
                 parts = rel.split('/')
                 dir_key = '/'.join(parts[:-1]) if len(parts) > 1 else ''
                 dirs[dir_key].append(path)
@@ -442,7 +442,7 @@ class EditorPage(Gtk.Box):
             # Wurzel-Dateien
             if '' in dirs:
                 exp = Adw.ExpanderRow()
-                exp.set_title('/etc/nixos')
+                exp.set_title('/etc/nixos/nixos-config')
                 exp.set_expanded(True)
                 for path in dirs['']:
                     self._add_file_row(exp, path)
@@ -481,7 +481,7 @@ class EditorPage(Gtk.Box):
                 content = f.read()
             self._buf.set_text(content)
             self._current_file = path
-            self.file_label.set_label(path.replace('/etc/nixos/', ''))
+            self.file_label.set_label(path.replace('/etc/nixos/nixos-config/', ''))
             self.save_btn.set_sensitive(True)
         except Exception as e:
             self._buf.set_text(f'Fehler beim Lesen: {e}')
