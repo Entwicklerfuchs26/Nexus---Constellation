@@ -80,7 +80,8 @@
   "format": "{}",
   "return-type": "json",
   "exec": "mode=$(cat ~/.cache/sojus/colorscheme 2>/dev/null || echo dark); if [ \"$mode\" = \"light\" ]; then echo '{\"text\":\"☀️\",\"class\":\"light\",\"tooltip\":\"Light Mode\"}'; else echo '{\"text\":\"🌙\",\"class\":\"dark\",\"tooltip\":\"Dark Mode\"}'; fi",
-  "interval": 5,
+  "interval": 30,
+  "signal": 8,
   "on-click": "~/.config/skwd-wall/scripts/toggle-theme.sh",
   "tooltip": true
 },

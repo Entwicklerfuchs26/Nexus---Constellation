@@ -73,4 +73,9 @@ sleep 0.5
 skwd wall apply "{\"path\":\"$wallpaper_path\"}"
 
 echo "$target" > "$STATE_FILE"
+
+# Waybar-Toggle-Modul sofort aktualisieren statt auf den naechsten Poll zu
+# warten (signal: 8 im custom/theme-toggle Modul in waybar-config.jsonc).
+pkill -RTMIN+8 waybar 2>/dev/null || true
+
 echo "Theme umgeschaltet auf: $target ($scheme_type, Wallpaper: $wallpaper_path)"
