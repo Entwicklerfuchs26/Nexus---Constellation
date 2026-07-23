@@ -27,9 +27,13 @@ else
     touch "$OVERRIDE_FILE"
 fi
 
+# scheme-fidelity fuer beide Modi: bleibt nah an den tatsaechlichen
+# Wallpaper-Farben (keine kuenstliche Hue-Rotation). scheme-expressive wurde
+# verworfen, weil es die Primary-Farbe wallpaper-unabhaengig in Richtung Rot
+# schiebt (siehe Feedback: "roter Schleier" trotz gruenem Wallpaper).
 case "$target" in
     dark)  scheme_type="scheme-fidelity" ;;
-    light) scheme_type="scheme-expressive" ;;
+    light) scheme_type="scheme-fidelity" ;;
     *) echo "Unbekannter Modus: $target" >&2; exit 1 ;;
 esac
 
