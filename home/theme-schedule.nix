@@ -12,10 +12,10 @@
 
   systemd.user.timers.theme-auto-light = {
     Unit = {
-      Description = "Sojus Theme Auto-Switch: Light (07:00)";
+      Description = "Sojus Theme Auto-Switch: Light (08:00)";
     };
     Timer = {
-      OnCalendar = "07:00";
+      OnCalendar = "08:00";
       Persistent = true;
     };
     Install = {
@@ -35,10 +35,10 @@
 
   systemd.user.timers.theme-auto-dark = {
     Unit = {
-      Description = "Sojus Theme Auto-Switch: Dark (21:00)";
+      Description = "Sojus Theme Auto-Switch: Dark (20:00)";
     };
     Timer = {
-      OnCalendar = "21:00";
+      OnCalendar = "20:00";
       Persistent = true;
     };
     Install = {

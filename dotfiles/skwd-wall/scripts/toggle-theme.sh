@@ -3,7 +3,6 @@ set -euo pipefail
 
 CACHE_DIR="$HOME/.cache/sojus"
 STATE_FILE="$CACHE_DIR/colorscheme"
-OVERRIDE_FILE="$CACHE_DIR/colorscheme-override"
 CONFIG="$HOME/.config/skwd-wall/config.json"
 LOCK_FILE="$CACHE_DIR/toggle.lock"
 
@@ -22,19 +21,13 @@ current_mode() {
     cat "$STATE_FILE" 2>/dev/null || echo "dark"
 }
 
-# --auto light|dark: vom systemd-Timer aufgerufen, respektiert Override
-# ohne Argument: manueller Toggle (Waybar-Klick), setzt Override
+# --auto light|dark: vom systemd-Timer aufgerufen, schaltet immer (kein Override)
+# ohne Argument: manueller Toggle (Waybar-Klick)
 if [ "${1:-}" = "--auto" ]; then
     target="${2:?Usage: toggle-theme.sh --auto light|dark}"
-    if [ -f "$OVERRIDE_FILE" ]; then
-        rm -f "$OVERRIDE_FILE"
-        echo "Override aktiv, automatischer Wechsel zu '$target' uebersprungen. Override zurueckgesetzt."
-        exit 0
-    fi
 else
     mode="$(current_mode)"
     if [ "$mode" = "light" ]; then target="dark"; else target="light"; fi
-    touch "$OVERRIDE_FILE"
 fi
 
 # scheme-fidelity fuer beide Modi: bleibt nah an den tatsaechlichen
