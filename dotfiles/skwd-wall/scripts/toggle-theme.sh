@@ -53,6 +53,14 @@ wallpaper_dir = config['paths']['wallpaper']
 status = json.loads(__import__('subprocess').check_output(['skwd', 'status']))
 print(f\"{wallpaper_dir}/{status['current_wallpaper']}\")
 ")"
+# skwd-daemons interner externalMatugenCommand-Lauf rendert das gtk4-Template
+# (letztes Template in ~/.config/matugen/config.toml) nicht zuverlaessig mit,
+# vermutlich bricht die interne Kette vorher ab. Deshalb hier explizit und
+# vollstaendig selbst rendern, BEVOR skwd wall apply laeuft (das den
+# Nautilus-Neustart triggert, der gtk.css erst dann liest).
+matugen -c "$HOME/.config/matugen/config.toml" image "$wallpaper_path" \
+    --source-color-index 0 -m "$target" -t "$scheme_type" -q
+
 # skwd-daemon liefert beim ersten Apply nach einem Mode-Wechsel manchmal noch
 # Farben vom vorherigen Rendering (Race mit der Wallpaper-Transition-Animation).
 # Ein zweiter, identischer Call direkt danach ist reproduzierbar korrekt.
