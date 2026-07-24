@@ -1,3 +1,4 @@
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
@@ -74,7 +75,21 @@ Item {
         calendar.days = buckets
     }
 
+    function _origin() {
+        return creds.caldavUrl.replace(/\/+$/, "")
+    }
+
+    // Qt/QML's XMLHttpRequest rejects non-standard HTTP verbs ("Unsupported HTTP
+    // method type"), so the CalDAV REPORT request has to go through curl via
+    // Process instead (same rationale as CredentialsLoader's Process-based read).
+    function _shQuote(s) {
+        return "'" + String(s).replace(/'/g, "'\\''") + "'"
+    }
+
     function fetchEvents() {
+        var calendars = creds.caldavCalendars
+        if (calendars.length === 0) return
+
         var today = new Date()
         today.setHours(0, 0, 0, 0)
         var rangeEnd = new Date(today)
@@ -91,30 +106,51 @@ Item {
             + '</C:comp-filter></C:comp-filter></C:filter>'
             + '</C:calendar-query>'
 
-        var xhr = new XMLHttpRequest()
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState !== XMLHttpRequest.DONE) return
-            if (xhr.status < 200 || xhr.status >= 300) {
-                console.log("Kalender-Widget: HTTP-Fehler", xhr.status)
-                return
-            }
+        var origin = calendar._origin()
+        var auth = creds.caldavUser + ":" + creds.caldavPassword
+
+        var script = ""
+        for (var i = 0; i < calendars.length; i++) {
+            var url = origin + calendars[i]
+            script += "echo '___CAL_START___'\n"
+            script += "curl -s -X REPORT " + calendar._shQuote(url)
+                + " -H 'Depth: 1' -H 'Content-Type: application/xml; charset=utf-8'"
+                + " -u " + calendar._shQuote(auth)
+                + " --data " + calendar._shQuote(body) + "\n"
+            script += "echo '___CAL_END___'\n"
+        }
+
+        fetcher.command = ["bash", "-c", script]
+        fetcher.running = true
+    }
+
+    function _handleFetchOutput(text) {
+        var blocks = text.split("___CAL_START___").slice(1).map(function (b) {
+            return b.split("___CAL_END___")[0]
+        })
+        var merged = []
+        for (var i = 0; i < blocks.length; i++) {
             try {
-                calendar.rebuildDays(calendar.parseEvents(xhr.responseText))
+                merged = merged.concat(calendar.parseEvents(blocks[i]))
             } catch (e) {
                 console.log("Kalender-Widget: Parse-Fehler", e)
             }
         }
-        xhr.open("REPORT", creds.caldavUrl)
-        xhr.setRequestHeader("Depth", "1")
-        xhr.setRequestHeader("Content-Type", "application/xml; charset=utf-8")
-        xhr.setRequestHeader("Authorization", "Basic " + Qt.btoa(creds.caldavUser + ":" + creds.caldavPassword))
-        xhr.send(body)
+        merged.sort(function (a, b) { return a.date - b.date })
+        calendar.rebuildDays(merged)
+    }
+
+    Process {
+        id: fetcher
+        stdout: StdioCollector {
+            onStreamFinished: calendar._handleFetchOutput(this.text)
+        }
     }
 
     CredentialsLoader {
         id: creds
         onCredentialsLoaded: {
-            calendar.configured = !creds.isPlaceholder(creds.caldavUrl, "CALDAV_URL")
+            calendar.configured = !creds.isPlaceholder(creds.caldavUrl, "CALDAV_URL") && creds.caldavCalendars.length > 0
             if (calendar.configured) calendar.fetchEvents()
         }
     }

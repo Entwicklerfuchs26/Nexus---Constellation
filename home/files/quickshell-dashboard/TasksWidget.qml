@@ -11,18 +11,35 @@ Item {
 
     property bool configured: false
     property var taskList: []
+    property var noDueTaskList: []
+    property bool showNoDue: false
 
     function _baseUrl() {
         var u = creds.vikunjaUrl
         if (u.length > 0 && u.charAt(u.length - 1) !== "/") u += "/"
-        return u
+        return u + "api/v1/"
     }
 
-    function isToday(iso) {
-        if (!iso || iso.indexOf("0001-01-01") === 0) return false
-        var d = new Date(iso)
-        var now = new Date()
-        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()
+    function hasNoDueDate(iso) {
+        return !iso || iso.indexOf("0001-01-01") === 0
+    }
+
+    function isDueOrOverdue(iso) {
+        if (tasks.hasNoDueDate(iso)) return false
+        var endOfToday = new Date()
+        endOfToday.setHours(23, 59, 59, 999)
+        return new Date(iso) <= endOfToday
+    }
+
+    function _byPriorityDesc(a, b) {
+        return (b.priority || 0) - (a.priority || 0)
+    }
+
+    function _findIndex(list, taskId) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].id === taskId) return i
+        }
+        return -1
     }
 
     function fetchTasks() {
@@ -39,9 +56,12 @@ Item {
             }
             try {
                 var all = JSON.parse(xhr.responseText)
-                var todays = all.filter(function (t) { return !t.done && tasks.isToday(t.due_date) })
-                todays.sort(function (a, b) { return (b.priority || 0) - (a.priority || 0) })
-                tasks.taskList = todays
+                var due = all.filter(function (t) { return !t.done && tasks.isDueOrOverdue(t.due_date) })
+                due.sort(tasks._byPriorityDesc)
+                var noDue = all.filter(function (t) { return !t.done && tasks.hasNoDueDate(t.due_date) })
+                noDue.sort(tasks._byPriorityDesc)
+                tasks.taskList = due
+                tasks.noDueTaskList = noDue
             } catch (e) {
                 console.log("Tasks-Widget: Parse-Fehler", e)
             }
@@ -52,25 +72,26 @@ Item {
     }
 
     function toggleDone(task) {
-        var idx = -1
-        for (var i = 0; i < tasks.taskList.length; i++) {
-            if (tasks.taskList[i].id === task.id) { idx = i; break }
-        }
+        var inDue = tasks._findIndex(tasks.taskList, task.id) !== -1
+        var list = inDue ? tasks.taskList : tasks.noDueTaskList
+        var idx = tasks._findIndex(list, task.id)
         if (idx === -1) return
 
         var wasDone = task.done
-        var updated = tasks.taskList.slice()
+        var updated = list.slice()
         updated[idx] = Object.assign({}, updated[idx], { done: !wasDone })
-        tasks.taskList = updated
+        if (inDue) tasks.taskList = updated
+        else tasks.noDueTaskList = updated
 
         var xhr = new XMLHttpRequest()
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== XMLHttpRequest.DONE) return
             if (xhr.status < 200 || xhr.status >= 300) {
                 console.log("Tasks-Widget: PATCH-Fehler", xhr.status)
-                var reverted = tasks.taskList.slice()
+                var reverted = updated.slice()
                 reverted[idx] = Object.assign({}, reverted[idx], { done: wasDone })
-                tasks.taskList = reverted
+                if (inDue) tasks.taskList = reverted
+                else tasks.noDueTaskList = reverted
             }
         }
         xhr.open("PATCH", tasks._baseUrl() + "tasks/" + task.id)
@@ -106,8 +127,8 @@ Item {
 
     Text {
         anchors.centerIn: parent
-        visible: tasks.configured && tasks.taskList.length === 0
-        text: "Keine offenen Tasks heute"
+        visible: tasks.configured && tasks.taskList.length === 0 && tasks.noDueTaskList.length === 0
+        text: "Keine offenen Tasks"
         font.family: "JetBrains Mono"
         font.pixelSize: 12
         opacity: 0.4
@@ -122,62 +143,38 @@ Item {
         Repeater {
             model: tasks.taskList
 
-            RowLayout {
-                id: taskRow
+            TaskRow {
                 required property var modelData
-                Layout.fillWidth: true
-                spacing: 10
+                task: modelData
+                textColor: tasks.textColor
+                accentColor: tasks.accentColor
+                onToggleRequested: tasks.toggleDone(modelData)
+            }
+        }
 
-                Rectangle {
-                    width: 16
-                    height: 16
-                    radius: 4
-                    color: taskRow.modelData.done ? tasks.accentColor : "transparent"
-                    border.color: tasks.accentColor
-                    border.width: 1.5
+        Text {
+            visible: tasks.noDueTaskList.length > 0
+            text: (tasks.showNoDue ? "▾ " : "▸ ") + tasks.noDueTaskList.length + " ohne Fälligkeitsdatum"
+            font.family: "JetBrains Mono"
+            font.pixelSize: 10
+            opacity: 0.5
+            color: tasks.textColor
 
-                    MouseArea {
-                        anchors.fill: parent
-                        anchors.margins: -4
-                        onClicked: tasks.toggleDone(taskRow.modelData)
-                    }
-                }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: tasks.showNoDue = !tasks.showNoDue
+            }
+        }
 
-                Text {
-                    Layout.fillWidth: true
-                    text: taskRow.modelData.title
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 12
-                    font.strikeout: taskRow.modelData.done
-                    opacity: taskRow.modelData.done ? 0.4 : 1
-                    elide: Text.ElideRight
-                    color: tasks.textColor
-                }
+        Repeater {
+            model: tasks.showNoDue ? tasks.noDueTaskList : []
 
-                Text {
-                    visible: taskRow.modelData.priority > 0
-                    text: "P" + taskRow.modelData.priority
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 10
-                    opacity: 0.6
-                    color: tasks.textColor
-                }
-
-                Rectangle {
-                    radius: 8
-                    color: Qt.rgba(tasks.accentColor.r, tasks.accentColor.g, tasks.accentColor.b, taskRow.modelData.done ? 0.15 : 0.25)
-                    Layout.preferredWidth: badgeText.implicitWidth + 14
-                    Layout.preferredHeight: badgeText.implicitHeight + 4
-
-                    Text {
-                        id: badgeText
-                        anchors.centerIn: parent
-                        text: taskRow.modelData.done ? "erledigt" : "offen"
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 9
-                        color: tasks.textColor
-                    }
-                }
+            TaskRow {
+                required property var modelData
+                task: modelData
+                textColor: tasks.textColor
+                accentColor: tasks.accentColor
+                onToggleRequested: tasks.toggleDone(modelData)
             }
         }
     }
