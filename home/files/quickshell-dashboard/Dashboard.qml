@@ -75,11 +75,29 @@ Scope {
             rowSpacing: 28
             columnSpacing: 28
 
-            DashboardCard { title: "Kalender"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
-            DashboardCard { title: "Wetter"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
-            DashboardCard { title: "Tasks"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
+            DashboardCard {
+                title: "Kalender"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                CalendarWidget { textColor: colors.surfaceText }
+            }
+            DashboardCard {
+                title: "Wetter"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                WeatherWidget { textColor: colors.surfaceText }
+            }
+            DashboardCard {
+                title: "Tasks"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                TasksWidget { textColor: colors.surfaceText; accentColor: colors.primary }
+            }
             DashboardCard { title: "News Hub"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
             DashboardCard { title: "Sojus Chat"; Layout.columnSpan: 2; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
+
+            DashboardCard {
+                title: "Uhr & Datum"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                ClockWidget { textColor: colors.surfaceText }
+            }
+            DashboardCard {
+                title: "System-Monitor"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                SystemMonitorWidget { textColor: colors.surfaceText; ringColor: colors.primary; trackColor: Qt.rgba(colors.outline.r, colors.outline.g, colors.outline.b, 0.25) }
+            }
         }
     }
 
