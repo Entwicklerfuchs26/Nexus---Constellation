@@ -62,6 +62,8 @@ Item {
             + "&timezone=Europe%2FBerlin&forecast_days=4"
 
         var xhr = new XMLHttpRequest()
+        xhr.timeout = 5000
+        xhr.ontimeout = function () { console.log("Wetter-Widget: Zeitüberschreitung") }
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== XMLHttpRequest.DONE) return
             if (xhr.status !== 200) {

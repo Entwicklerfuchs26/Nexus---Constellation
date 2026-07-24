@@ -48,6 +48,8 @@ Item {
             + "&sort_by=priority&order_by=desc&per_page=50"
 
         var xhr = new XMLHttpRequest()
+        xhr.timeout = 5000
+        xhr.ontimeout = function () { console.log("Tasks-Widget: Zeitüberschreitung") }
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== XMLHttpRequest.DONE) return
             if (xhr.status < 200 || xhr.status >= 300) {
@@ -84,6 +86,14 @@ Item {
         else tasks.noDueTaskList = updated
 
         var xhr = new XMLHttpRequest()
+        xhr.timeout = 5000
+        xhr.ontimeout = function () {
+            console.log("Tasks-Widget: PATCH-Zeitüberschreitung")
+            var reverted = updated.slice()
+            reverted[idx] = Object.assign({}, reverted[idx], { done: wasDone })
+            if (inDue) tasks.taskList = reverted
+            else tasks.noDueTaskList = reverted
+        }
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== XMLHttpRequest.DONE) return
             if (xhr.status < 200 || xhr.status >= 300) {

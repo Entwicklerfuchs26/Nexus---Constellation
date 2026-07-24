@@ -22,16 +22,16 @@ Item {
     property var _prevCpu: null
 
     readonly property string _pollScript: "
-        cat /proc/stat | head -1
+        timeout 5 cat /proc/stat | head -1
         echo '###SPLIT###'
         for d in /sys/class/hwmon/hwmon*; do
-            n=$(cat \"$d/name\" 2>/dev/null)
-            if [ \"$n\" = \"k10temp\" ]; then cat \"$d/temp1_input\"; break; fi
+            n=$(timeout 5 cat \"$d/name\" 2>/dev/null)
+            if [ \"$n\" = \"k10temp\" ]; then timeout 5 cat \"$d/temp1_input\"; break; fi
         done
         echo '###SPLIT###'
-        nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null
+        timeout 5 nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null
         echo '###SPLIT###'
-        grep -E '^(MemTotal|MemAvailable):' /proc/meminfo
+        timeout 5 grep -E '^(MemTotal|MemAvailable):' /proc/meminfo
     "
 
     function _parseCpuLine(line) {

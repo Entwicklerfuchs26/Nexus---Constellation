@@ -113,7 +113,7 @@ Item {
         for (var i = 0; i < calendars.length; i++) {
             var url = origin + calendars[i]
             script += "echo '___CAL_START___'\n"
-            script += "curl -s -X REPORT " + calendar._shQuote(url)
+            script += "timeout 5 curl -s -X REPORT " + calendar._shQuote(url)
                 + " -H 'Depth: 1' -H 'Content-Type: application/xml; charset=utf-8'"
                 + " -u " + calendar._shQuote(auth)
                 + " --data " + calendar._shQuote(body) + "\n"

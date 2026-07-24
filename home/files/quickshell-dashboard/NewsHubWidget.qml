@@ -35,6 +35,8 @@ Item {
         if (!tab || !tab.url) return
 
         var xhr = new XMLHttpRequest()
+        xhr.timeout = 5000
+        xhr.ontimeout = function () { console.log("News-Hub-Widget: Zeitüberschreitung", tab.name) }
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== XMLHttpRequest.DONE) return
             if (xhr.status < 200 || xhr.status >= 300) {
