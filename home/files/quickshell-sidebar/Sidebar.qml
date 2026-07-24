@@ -9,7 +9,9 @@ Scope {
     id: root
 
     readonly property int collapsedWidth: 4
-    readonly property int expandedWidth: 64
+    // War 64 (reine Icon-Leiste) - jetzt breiter, damit beim Hover eines einzelnen
+    // Icons das Label rechts daneben Platz hat (siehe SidebarButton.qml).
+    readonly property int expandedWidth: 180
 
     // App-Shortcuts: hier konfigurierbar (Icon-Theme-Name + Exec-Kommando).
     readonly property var appShortcuts: [
@@ -170,35 +172,37 @@ Scope {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.topMargin: 12
-                    anchors.leftMargin: (root.expandedWidth - 40) / 2
-                    width: 40
+                    anchors.leftMargin: 12
+                    width: root.expandedWidth - 24
                     spacing: 6
                     opacity: panel.expanded ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: 150 } }
 
                     SidebarButton {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.alignment: Qt.AlignLeft
                         glyph: "🏠"
                         tooltipText: "Dashboard"
-                        hoverColor: colors.secondary
-                        foregroundColor: colors.surfaceText
+                        hoverColor: colors.primary
+                        foregroundColor: colors.primary
+                        labelColor: colors.surfaceText
                         onClicked: Quickshell.execDetached(["notify-send", "Dashboard", "Noch nicht implementiert"])
                     }
 
                     SidebarButton {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.alignment: Qt.AlignLeft
                         glyph: "▶"
                         tooltipText: "Media Player"
-                        hoverColor: colors.secondary
-                        foregroundColor: colors.surfaceText
+                        hoverColor: colors.primary
+                        foregroundColor: colors.primary
+                        labelColor: colors.surfaceText
                         onClicked: Quickshell.execDetached(["bash", "-lc", "~/.local/bin/media-toggle"])
                     }
 
                     Rectangle {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.alignment: Qt.AlignLeft
                         Layout.topMargin: 4
                         Layout.bottomMargin: 4
-                        width: 28
+                        Layout.preferredWidth: 28
                         height: 1
                         color: colors.outline
                         opacity: 0.4
@@ -209,10 +213,11 @@ Scope {
 
                         SidebarButton {
                             required property var modelData
-                            Layout.alignment: Qt.AlignHCenter
+                            Layout.alignment: Qt.AlignLeft
                             iconName: modelData.iconName
                             tooltipText: modelData.tooltip
-                            hoverColor: colors.secondary
+                            hoverColor: colors.primary
+                            labelColor: colors.surfaceText
                             onClicked: Quickshell.execDetached(["hyprctl", "dispatch", "exec", modelData.exec])
                         }
                     }

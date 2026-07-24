@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Widgets
 import QtQuick
+import QtQuick.Layouts
 
 Item {
     id: root
@@ -11,40 +12,71 @@ Item {
     property string tooltipText: ""
     property color hoverColor: "#ffffff"
     property color foregroundColor: "#ffffff"
+    property color labelColor: "#ffffff"
 
     signal clicked()
 
-    implicitWidth: 40
+    readonly property bool hovered: mouseArea.containsMouse
+
+    implicitWidth: iconArea.width + (root.hovered && root.tooltipText !== "" ? label.implicitWidth + 8 : 0)
     implicitHeight: 40
 
     Rectangle {
         id: hoverBg
-        anchors.fill: parent
+        anchors.left: parent.left
+        width: iconArea.width
+        height: parent.height
         radius: 10
-        color: hoverColor
-        opacity: mouseArea.containsMouse ? 0.35 : 0
+        color: root.hoverColor
+        opacity: root.hovered ? 0.35 : 0
         Behavior on opacity { NumberAnimation { duration: 120 } }
     }
 
-    Text {
-        visible: root.glyph !== ""
-        anchors.centerIn: parent
-        text: root.glyph
-        font.pixelSize: 18
-        color: root.foregroundColor
+    Item {
+        id: iconArea
+        width: 40
+        height: 40
+        scale: root.hovered ? 1.12 : 1.0
+        opacity: root.hovered ? 1.0 : 0.85
+        Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 120 } }
+
+        Text {
+            visible: root.glyph !== ""
+            anchors.centerIn: parent
+            text: root.glyph
+            font.pixelSize: 18
+            color: root.foregroundColor
+        }
+
+        IconImage {
+            visible: root.iconName !== ""
+            anchors.centerIn: parent
+            width: 24
+            height: 24
+            source: root.iconName !== "" ? Quickshell.iconPath(root.iconName) : ""
+        }
     }
 
-    IconImage {
-        visible: root.iconName !== ""
-        anchors.centerIn: parent
-        width: 24
-        height: 24
-        source: root.iconName !== "" ? Quickshell.iconPath(root.iconName) : ""
+    Text {
+        id: label
+        anchors.left: iconArea.right
+        anchors.leftMargin: 8
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.tooltipText
+        font.family: "JetBrains Mono"
+        font.pixelSize: 11
+        color: root.labelColor
+        visible: opacity > 0
+        opacity: root.hovered ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: 120 } }
     }
 
     MouseArea {
         id: mouseArea
-        anchors.fill: parent
+        anchors.left: parent.left
+        width: iconArea.width
+        height: parent.height
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: root.clicked()
