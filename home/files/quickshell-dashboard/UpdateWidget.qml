@@ -55,7 +55,7 @@ Item {
 
     Process {
         id: metaProc
-        command: ["bash", "-c", "timeout 5 nix flake metadata /etc/nixos/nixos-config --json 2>&1"]
+        command: ["bash", "-c", "timeout 5 nix flake metadata /etc/nixos/nixos-config --json 2>/dev/null"]
         stdout: StdioCollector {
             onStreamFinished: upd._handleMetadata(this.text)
         }
