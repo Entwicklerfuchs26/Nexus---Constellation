@@ -356,6 +356,10 @@ buildFHSEnv {
     export QT_XKB_CONFIG_ROOT="${xkeyboard_config}/share/X11/xkb"
     export QT_PLUGIN_PATH="${davinci}/libs/plugins:$QT_PLUGIN_PATH"
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib:/usr/lib32:${davinci}/libs
+    # Resolve talks to plain ALSA inside the FHS env; PipeWire's ALSA plugin
+    # otherwise surfaces the resulting stream with no name/icon in
+    # pwvucontrol/pavucontrol. PIPEWIRE_PROPS tags the client explicitly.
+    export PIPEWIRE_PROPS='{ "application.name": "DaVinci Resolve", "node.name": "DaVinci Resolve", "node.description": "DaVinci Resolve", "application.icon-name": "davinci-resolve" }'
     if [ $# -gt 0 ]; then
       exec "$@"
     else
