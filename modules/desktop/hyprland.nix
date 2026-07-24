@@ -47,6 +47,9 @@ services.displayManager.defaultSession = "hyprland";
     slurp
     grimblast
     hyprpicker
+    yt-dlp
+    mpv
+    socat
     polkit_gnome
     quickshell.packages.x86_64-linux.default
     qt6.qtmultimedia

@@ -12,6 +12,8 @@ Scope {
     // War 64 (reine Icon-Leiste) - jetzt breiter, damit beim Hover eines einzelnen
     // Icons das Label rechts daneben Platz hat (siehe SidebarButton.qml).
     readonly property int expandedWidth: 180
+    readonly property int mediaPanelWidth: 380
+    readonly property int mediaPanelHeight: 340
 
     // App-Shortcuts: hier konfigurierbar (Icon-Theme-Name + Exec-Kommando).
     readonly property var appShortcuts: [
@@ -22,25 +24,9 @@ Scope {
         { iconName: "org.prismlauncher.PrismLauncher", exec: "prismlauncher", tooltip: "Prism Launcher" }
     ]
 
-    // Bleibt fixiert (ausgefahren), solange das eww media-picker Panel offen ist.
+    // Bleibt fixiert (ausgefahren), solange das Media-Panel offen ist - direkt vom
+    // ▶-Button getoggelt (kein eww/media-picker mehr, echtes Quickshell-Panel).
     property bool mediaPanelOpen: false
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: mediaPanelCheck.running = true
-    }
-
-    Process {
-        id: mediaPanelCheck
-        command: ["eww", "active-windows"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.mediaPanelOpen = this.text.indexOf("media-picker") !== -1
-            }
-        }
-    }
 
     // ── Matugen-Farben (live, reaktiv) ──────────────────────────────────────
     // Fallback-Palette entspricht skwd-wall/qml/Colors.qml, greift solange
@@ -105,23 +91,26 @@ Scope {
             }
 
             exclusiveZone: 0
-            // Die Wayland-Surface selbst bleibt IMMER auf voller (ausgeklappter) Breite —
-            // animiert wird nur das innere visualRect + der Input-Mask. Grund: Bug 1 (Sidebar
-            // fährt beim Klicken auf Buttons ein) kam daher, dass ein sich live änderndes
-            // implicitWidth auf der echten Layer-Shell-Surface die Hit-Test-Geometrie kurz
-            // aus dem Tritt bringt. Mit fixer Surface-Größe passiert die Animation rein
-            // QML-intern (Rectangle-width + mask), das ist robust.
-            implicitWidth: root.expandedWidth
+            // Die Wayland-Surface selbst bleibt IMMER auf voller Breite (Sidebar +
+            // Media-Panel-Reserve) — animiert wird nur innerhalb per Rectangle-width +
+            // Input-Mask. Grund: Bug 1 (Sidebar fährt beim Klicken auf Buttons ein) kam
+            // daher, dass ein sich live änderndes implicitWidth auf der echten Layer-Shell-
+            // Surface die Hit-Test-Geometrie kurz aus dem Tritt bringt. Mit fixer
+            // Surface-Größe passiert jede Animation rein QML-intern, das ist robust -
+            // gilt jetzt auch fürs Media-Panel, das aus der Sidebar rechts rausklappt.
+            implicitWidth: root.expandedWidth + root.mediaPanelWidth
             color: "transparent"
 
             property bool hovered: hoverArea.hovered
             property bool expanded: hovered || root.mediaPanelOpen
 
-            // Nur der aktuell sichtbare/ausgeklappte Bereich ist klickbar/hoverbar —
-            // eingeklappt bleibt der Rest der (unsichtbaren) Surface klick-durchlässig
-            // zum Desktop dahinter.
+            // Zwei kombinierte Teilbereiche sind klick-/hoverbar: die Sidebar-Leiste
+            // (visualRect, volle Höhe) und - nur wenn offen - das Media-Panel daneben
+            // (mediaPanelRect, nur seine eigene Höhe). Alles andere bleibt klick-
+            // durchlässig zum Desktop dahinter.
             mask: Region {
-                item: visualRect
+                Region { item: visualRect }
+                Region { item: mediaPanelRect }
             }
 
             Rectangle {
@@ -195,7 +184,7 @@ Scope {
                         hoverColor: colors.primary
                         foregroundColor: colors.primary
                         labelColor: colors.surfaceText
-                        onClicked: Quickshell.execDetached(["bash", "-lc", "~/.local/bin/media-toggle"])
+                        onClicked: root.mediaPanelOpen = !root.mediaPanelOpen
                     }
 
                     Rectangle {
@@ -222,6 +211,28 @@ Scope {
                         }
                     }
                 }
+            }
+
+            MediaPanel {
+                id: mediaPanelRect
+                anchors.top: parent.top
+                anchors.topMargin: 58
+                x: root.expandedWidth
+                width: root.mediaPanelOpen ? root.mediaPanelWidth : 0
+                height: root.mediaPanelHeight
+                visible: width > 0
+                clip: true
+
+                onWidthChanged: panel.mask.changed()
+                Behavior on width {
+                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                }
+
+                textColor: colors.surfaceText
+                accentColor: colors.primary
+                accentTextColor: colors.primaryText
+                surfaceColor: colors.surface
+                outlineColor: colors.outline
             }
         }
     }

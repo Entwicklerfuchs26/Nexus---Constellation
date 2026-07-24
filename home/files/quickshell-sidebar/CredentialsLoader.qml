@@ -56,11 +56,9 @@ Item {
         loader.credentialsLoaded()
     }
 
-    // War bewusst per Process/bash statt FileView gelesen (einmaliger Read beim Start).
-    // Auf FileView mit watchChanges umgestellt (Auftrag "Robustheit" 2026-07-24), damit
-    // Änderungen an credentials.env ohne Quickshell-Neustart übernommen werden - gleiches
-    // Muster wie die Matugen-Farben in Dashboard.qml/Sidebar.qml. agenix liefert Secrets
-    // ebenfalls als reale Dateien, der Ladeweg bleibt also kompatibel.
+    // Gleiches Muster wie home/files/quickshell-dashboard/CredentialsLoader.qml -
+    // Quickshell-Configs sind pro Verzeichnis isoliert (kein Cross-Import), daher
+    // Duplikat statt geteilter Datei (wie schon beim Matugen-Farben-Loading).
     FileView {
         id: file
         path: "/home/fuchs/.config/nexus/credentials.env"
