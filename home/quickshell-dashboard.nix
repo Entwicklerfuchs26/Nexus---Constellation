@@ -21,4 +21,5 @@
   home.file.".config/quickshell/nexus-dashboard/ClipboardWidget.qml".source = ./files/quickshell-dashboard/ClipboardWidget.qml;
   home.file.".config/quickshell/nexus-dashboard/QuickToolsWidget.qml".source = ./files/quickshell-dashboard/QuickToolsWidget.qml;
   home.file.".config/quickshell/nexus-dashboard/NowPlayingWidget.qml".source = ./files/quickshell-dashboard/NowPlayingWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/SojusChatWidget.qml".source = ./files/quickshell-dashboard/SojusChatWidget.qml;
 }

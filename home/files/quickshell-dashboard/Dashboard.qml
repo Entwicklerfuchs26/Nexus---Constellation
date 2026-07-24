@@ -95,7 +95,10 @@ Scope {
                 title: "News Hub"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
                 NewsHubWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText }
             }
-            DashboardCard { title: "Sojus Chat"; Layout.columnSpan: 2; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
+            DashboardCard {
+                title: "Sojus Chat"; Layout.columnSpan: 2; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                SojusChatWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText; errorColor: colors.error }
+            }
 
             DashboardCard {
                 title: "Uhr & Datum"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
@@ -125,7 +128,7 @@ Scope {
             }
             DashboardCard {
                 title: "Updates"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
-                UpdateWidget { textColor: colors.surfaceText; accentColor: colors.primary; warnColor: colors.tertiary }
+                UpdateWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText; warnColor: colors.tertiary }
             }
             DashboardCard {
                 title: "Sojus-Agenten"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
