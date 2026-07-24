@@ -159,13 +159,22 @@ Item {
                     color: net.textColor
                 }
                 Item { Layout.fillWidth: true }
-                Text {
+                Rectangle {
                     visible: net.vpnActive
-                    text: "VPN"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 10
-                    font.bold: true
-                    color: net.accentColor
+                    radius: 6
+                    color: Qt.rgba(net.accentColor.r, net.accentColor.g, net.accentColor.b, 0.2)
+                    Layout.preferredWidth: vpnLabel.implicitWidth + 12
+                    Layout.preferredHeight: vpnLabel.implicitHeight + 6
+
+                    Text {
+                        id: vpnLabel
+                        anchors.centerIn: parent
+                        text: "VPN"
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 10
+                        font.bold: true
+                        color: net.textColor
+                    }
                 }
             }
 

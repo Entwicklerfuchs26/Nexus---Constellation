@@ -9,6 +9,7 @@ Item {
 
     property color textColor: "#ffffff"
     property color accentColor: "#c6b22b"
+    property color accentTextColor: "#383100"
     property color warnColor: "#a9a9ff"
 
     readonly property int staleDaysThreshold: 30
@@ -199,7 +200,7 @@ Item {
                 font.family: "JetBrains Mono"
                 font.pixelSize: 11
                 font.bold: true
-                color: upd.textColor
+                color: upd.accentTextColor
             }
 
             MouseArea {

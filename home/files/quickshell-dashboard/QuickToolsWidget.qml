@@ -125,12 +125,25 @@ Item {
         ColumnLayout {
             spacing: 8
 
-            Text {
-                text: tools.pomodoroDone ? "Fertig! 🍅" : tools.formatTime(tools.pomodoroRemaining)
-                font.family: "JetBrains Mono"
-                font.pixelSize: 26
-                font.bold: true
-                color: tools.pomodoroRunning ? tools.accentColor : tools.textColor
+            RowLayout {
+                spacing: 8
+
+                Rectangle {
+                    visible: tools.pomodoroRunning
+                    width: 8
+                    height: 8
+                    radius: 4
+                    color: tools.accentColor
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                Text {
+                    text: tools.pomodoroDone ? "Fertig! 🍅" : tools.formatTime(tools.pomodoroRemaining)
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 26
+                    font.bold: true
+                    color: tools.textColor
+                }
             }
 
             RowLayout {

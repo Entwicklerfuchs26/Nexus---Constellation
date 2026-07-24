@@ -140,7 +140,7 @@ Item {
                     Text {
                         text: player.status === "Playing" ? "⏸" : "▶"
                         font.pixelSize: 16
-                        color: player.accentColor
+                        color: player.textColor
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: player.control("play-pause") }
                     }
                     Text {
