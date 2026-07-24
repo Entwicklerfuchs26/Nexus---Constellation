@@ -111,7 +111,10 @@ Item {
     }
 
     function startCider() {
-        launcher.exec(["hyprctl", "dispatch", "exec", "cider"])
+        // Cider ist in nixpkgs "broken" - läuft stattdessen als Flatpak (sh.cider.Cider,
+        // installiert 2026-07-24). Meldet sich als MPRIS-Player "cider" an, per
+        // playerctl -l bestätigt.
+        launcher.exec(["hyprctl", "dispatch", "exec", "flatpak run sh.cider.Cider"])
     }
 
     Component.onCompleted: poller.running = true
