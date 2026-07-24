@@ -45,6 +45,8 @@ services.displayManager.defaultSession = "hyprland";
     xdg-desktop-portal-hyprland
     grim
     slurp
+    grimblast
+    hyprpicker
     polkit_gnome
     quickshell.packages.x86_64-linux.default
     qt6.qtmultimedia
