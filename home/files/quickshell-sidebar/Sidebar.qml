@@ -28,6 +28,15 @@ Scope {
     // ▶-Button getoggelt (kein eww/media-picker mehr, echtes Quickshell-Panel).
     property bool mediaPanelOpen: false
 
+    // Für Keybinds/Skripte von außen: `quickshell ipc -c nexus-sidebar call media toggle`
+    // (gleiches Muster wie beim Dashboard-Toggle in Dashboard.qml).
+    IpcHandler {
+        target: "media"
+        function toggle(): void { root.mediaPanelOpen = !root.mediaPanelOpen }
+        function show(): void { root.mediaPanelOpen = true }
+        function hide(): void { root.mediaPanelOpen = false }
+    }
+
     // ── Matugen-Farben (live, reaktiv) ──────────────────────────────────────
     // Fallback-Palette entspricht skwd-wall/qml/Colors.qml, greift solange
     // matugen noch keinen aktuellen Theme-State geschrieben hat.
