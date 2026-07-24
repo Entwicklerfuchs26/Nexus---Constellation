@@ -18,6 +18,7 @@
       ./theme-schedule.nix
       ./quickshell-sidebar.nix
       ./quickshell-dashboard.nix
+      ./activitywatch.nix
     ];
     home.packages = with pkgs; [
       vivaldi

@@ -29,6 +29,8 @@ Scope {
         property color primary: "#c6b22b"
         property color primaryText: "#383100"
         property color secondary: "#c6b22b"
+        property color tertiary: "#a9a9ff"
+        property color error: "#ba1a1a"
     }
 
     function _applyColors(text) {
@@ -47,6 +49,8 @@ Scope {
             colors.primary = pick(d.primary, colors.primary)
             colors.primaryText = pick(d.primaryText, colors.primaryText)
             colors.secondary = pick(d.secondary, colors.secondary)
+            colors.tertiary = pick(d.tertiary, colors.tertiary)
+            colors.error = pick(d.error, colors.error)
         } catch (e) {
             console.log("Dashboard: Fehler beim Parsen der Matugen-Farben:", e)
         }
@@ -87,7 +91,10 @@ Scope {
                 title: "Tasks"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
                 TasksWidget { textColor: colors.surfaceText; accentColor: colors.primary }
             }
-            DashboardCard { title: "News Hub"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
+            DashboardCard {
+                title: "News Hub"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                NewsHubWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText }
+            }
             DashboardCard { title: "Sojus Chat"; Layout.columnSpan: 2; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
 
             DashboardCard {
@@ -103,18 +110,63 @@ Scope {
 
     Component {
         id: dp3Layout
+        GridLayout {
+            columns: 2
+            rowSpacing: 28
+            columnSpacing: 28
+
+            DashboardCard {
+                title: "Netzwerk"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                NetworkWidget { textColor: colors.surfaceText; accentColor: colors.primary }
+            }
+            DashboardCard {
+                title: "Speicherplatz"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                DiskWidget { textColor: colors.surfaceText; accentColor: colors.primary; warnColor: colors.tertiary; dangerColor: colors.error }
+            }
+            DashboardCard {
+                title: "Updates"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                UpdateWidget { textColor: colors.surfaceText; accentColor: colors.primary; warnColor: colors.tertiary }
+            }
+            DashboardCard {
+                title: "Sojus-Agenten"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                AgentsWidget { textColor: colors.surfaceText; accentColor: colors.primary; errorColor: colors.error }
+            }
+            DashboardCard {
+                title: "Skill Tree"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                SkillTreeWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText }
+            }
+            DashboardCard {
+                title: "Activity"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                ActivityWidget { textColor: colors.surfaceText; accentColor: colors.primary }
+            }
+        }
+    }
+
+    Component {
+        id: hdmiLayout
         ColumnLayout {
             spacing: 28
 
-            DashboardCard { title: "System-Status"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
-            DashboardCard { title: "Vikunja"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
-            DashboardCard { title: "Skill Tree"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
-            DashboardCard { title: "Activity"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1 }
+            DashboardCard {
+                title: "Zwischenablage"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                ClipboardWidget { textColor: colors.surfaceText }
+            }
+            DashboardCard {
+                title: "Schnellzugriff"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                QuickToolsWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText }
+            }
+            DashboardCard {
+                title: "Now Playing"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                NowPlayingWidget { textColor: colors.surfaceText; accentColor: colors.primary }
+            }
         }
     }
 
     Variants {
-        model: Quickshell.screens.filter(function (s) { return s.name === "DP-1" || s.name === "DP-3" })
+        // HDMI-A-1 (XP-Pen-Tablet) ist nicht dauerhaft angeschlossen — Quickshell.screens
+        // spiegelt live nur tatsächlich verbundene Outputs, daher reicht der reine
+        // Namens-Filter: kein Fenster/keine Widgets, solange der Monitor fehlt.
+        model: Quickshell.screens.filter(function (s) { return s.name === "DP-1" || s.name === "DP-3" || s.name === "HDMI-A-1" })
 
         PanelWindow {
             id: panel
@@ -181,7 +233,9 @@ Scope {
                 Loader {
                     anchors.fill: parent
                     anchors.margins: 48
-                    sourceComponent: panel.modelData.name === "DP-1" ? dp1Layout : dp3Layout
+                    sourceComponent: panel.modelData.name === "DP-1" ? dp1Layout
+                        : panel.modelData.name === "DP-3" ? dp3Layout
+                        : hdmiLayout
                 }
             }
         }

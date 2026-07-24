@@ -10,4 +10,15 @@
   home.file.".config/quickshell/nexus-dashboard/CredentialsLoader.qml".source = ./files/quickshell-dashboard/CredentialsLoader.qml;
   home.file.".config/quickshell/nexus-dashboard/CalendarWidget.qml".source = ./files/quickshell-dashboard/CalendarWidget.qml;
   home.file.".config/quickshell/nexus-dashboard/TasksWidget.qml".source = ./files/quickshell-dashboard/TasksWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/TaskRow.qml".source = ./files/quickshell-dashboard/TaskRow.qml;
+  home.file.".config/quickshell/nexus-dashboard/NewsHubWidget.qml".source = ./files/quickshell-dashboard/NewsHubWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/NetworkWidget.qml".source = ./files/quickshell-dashboard/NetworkWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/DiskWidget.qml".source = ./files/quickshell-dashboard/DiskWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/UpdateWidget.qml".source = ./files/quickshell-dashboard/UpdateWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/AgentsWidget.qml".source = ./files/quickshell-dashboard/AgentsWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/SkillTreeWidget.qml".source = ./files/quickshell-dashboard/SkillTreeWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/ActivityWidget.qml".source = ./files/quickshell-dashboard/ActivityWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/ClipboardWidget.qml".source = ./files/quickshell-dashboard/ClipboardWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/QuickToolsWidget.qml".source = ./files/quickshell-dashboard/QuickToolsWidget.qml;
+  home.file.".config/quickshell/nexus-dashboard/NowPlayingWidget.qml".source = ./files/quickshell-dashboard/NowPlayingWidget.qml;
 }

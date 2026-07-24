@@ -7,8 +7,12 @@ Item {
     property string caldavUrl: ""
     property string caldavUser: ""
     property string caldavPassword: ""
+    property var caldavCalendars: []
     property string vikunjaUrl: ""
     property string vikunjaApiToken: ""
+    property var newsTabs: []
+    property string skillTreeUrl: ""
+    property string skillTreeLocalCmd: ""
     property bool loaded: false
 
     signal credentialsLoaded()
@@ -26,8 +30,20 @@ Item {
         loader.caldavUrl = map.CALDAV_URL || ""
         loader.caldavUser = map.CALDAV_USER || ""
         loader.caldavPassword = map.CALDAV_PASSWORD || ""
+        loader.caldavCalendars = (map.CALDAV_CALENDARS || "").split(",")
+            .map(function (s) { return s.trim() })
+            .filter(function (s) { return s.length > 0 })
         loader.vikunjaUrl = map.VIKUNJA_URL || ""
         loader.vikunjaApiToken = map.VIKUNJA_API_TOKEN || ""
+        var tabs = []
+        for (var n = 1; n <= 20; n++) {
+            var tabName = map["NEWS_TAB_" + n + "_NAME"]
+            if (!tabName) continue
+            tabs.push({ name: tabName, url: map["NEWS_TAB_" + n + "_URL"] || "" })
+        }
+        loader.newsTabs = tabs
+        loader.skillTreeUrl = map.SKILLTREE_URL || ""
+        loader.skillTreeLocalCmd = map.SKILLTREE_LOCAL_CMD || ""
         loader.loaded = true
         loader.credentialsLoaded()
     }
