@@ -132,7 +132,6 @@ programs.obs-studio = {
 
     # Python
     python3
-    pipx
     uv
   ] ++ userPackages;
 
