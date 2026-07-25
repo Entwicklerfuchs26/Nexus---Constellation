@@ -58,7 +58,6 @@ services.displayManager.defaultSession = "hyprland";
     sddm-astronaut
     kdePackages.kirigami
     kdePackages.qqc2-breeze-style
-    skwd-daemon.packages.x86_64-linux.default
     qt6.qtimageformats
   ];
 
