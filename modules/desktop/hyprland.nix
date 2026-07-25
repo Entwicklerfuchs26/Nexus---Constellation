@@ -27,6 +27,7 @@ services.displayManager.defaultSession = "hyprland";
   services.blueman.enable = true;
 
   environment.systemPackages = with pkgs; [
+    linux-wallpaperengine
     hyprlock
     hypridle
     awww.packages.${pkgs.system}.default
