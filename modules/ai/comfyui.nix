@@ -15,7 +15,7 @@
   };
 
   environment.systemPackages = with pkgs; [
-    python310
+    python3
     git
     gcc
     pkg-config
