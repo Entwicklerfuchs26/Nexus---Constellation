@@ -11,6 +11,13 @@ let
     onnxruntime
     sqlalchemy
     pydantic
+    pyyaml
+    alembic
+    requests
+    aiohttp
+    psutil
+    imageio
+    imageio-ffmpeg
   ]);
 in
 {
@@ -33,6 +40,7 @@ in
     python
     git
     libGL
+    ffmpeg
     (writeShellScriptBin "start-comfyui" ''
       #!/usr/bin/env bash
       COMFYUI_DIR="/data/comfyui"
