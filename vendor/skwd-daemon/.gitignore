@@ -1,0 +1,5 @@
+/target
+massif.out.*
+REGRESSION_TESTS.txt
+data/scripts/benchmark-swaps.sh
+/aur-skwd-daemon/

@@ -18,12 +18,15 @@
       url = "git+https://codeberg.org/LGFae/awww";
     };
 
+    # Lokal gepatcht (Zombie-Reap-Fix für ManagedProcess, siehe vendor/skwd-daemon/PATCHES.md)
+    # statt github:liixini/skwd-daemon — Rev 36f165a68611dfc55f1878ddd34491cdb6e22a44 + Patch.
     skwd-daemon = {
-      url = "github:liixini/skwd-daemon";
+      url = "path:./vendor/skwd-daemon";
     };
 
     skwd-wall = {
       url = "github:liixini/skwd-wall";
+      inputs.skwd-daemon.follows = "skwd-daemon";
     };
 
     agenix = {
@@ -67,6 +70,7 @@
         ./modules/core/base.nix
         ./modules/core/users.nix
         ./modules/hardware/nvidia.nix
+        ./modules/hardware/tablet.nix
         ./modules/core/printing.nix
         ./modules/software/software.nix
         ./modules/software/gaming.nix
@@ -75,6 +79,7 @@
         ./modules/desktop/hyprland.nix
         ./modules/ai/ollama.nix
         ./modules/ai/sojus.nix
+        ./modules/ai/comfyui.nix
         # Pausiert 2026-07-23: fraßen zusammen ~6,7GB von 8GB VRAM im Leerlauf
         # (RTX 2070, 8GB). Voice-Layer-Integration läuft jetzt über Hermes statt
         # sojus-pipeline.py — wieder einkommentieren sobald die Anbindung steht.
