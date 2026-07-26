@@ -1,10 +1,5 @@
 { config, pkgs, lib, ... }:
-let
-  pythonWithDeps = pkgs.python310.withPackages (ps: with ps; [
-    pip setuptools wheel
-  ]);
-
-in {
+{
   system.activationScripts.comfyuiSetup = {
     text = ''
       COMFYUI_DIR=/data/comfyui
@@ -26,8 +21,6 @@ in {
     pkg-config
     libffi
     openssl
-    cudaPackages.cudatoolkit
-    cudaPackages.nccl
     libGL
     (writeShellScriptBin "start-comfyui" ''
       #!/usr/bin/env bash
