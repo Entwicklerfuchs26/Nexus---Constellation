@@ -18,6 +18,10 @@ let
     psutil
     imageio
     imageio-ffmpeg
+    tqdm
+    websockets
+    soundfile
+    librosa
   ]);
 in
 {
