@@ -1,4 +1,18 @@
 { config, pkgs, lib, ... }:
+let
+  python = pkgs.python3.withPackages (ps: with ps; [
+    torch
+    torchvision
+    torchaudio
+    pillow
+    numpy
+    scipy
+    onnx
+    onnxruntime
+    sqlalchemy
+    pydantic
+  ]);
+in
 {
   system.activationScripts.comfyuiSetup = {
     text = ''
@@ -16,17 +30,12 @@
   };
 
   environment.systemPackages = with pkgs; [
-    python3
+    python
     git
-    gcc
-    pkg-config
-    libffi
-    openssl
     libGL
     (writeShellScriptBin "start-comfyui" ''
       #!/usr/bin/env bash
       COMFYUI_DIR="/data/comfyui"
-      VENV_DIR="$COMFYUI_DIR/venv"
       
       if [ ! -d "$COMFYUI_DIR" ]; then
         echo "❌ ComfyUI nicht installiert"
@@ -34,21 +43,8 @@
       fi
 
       cd "$COMFYUI_DIR"
-      
-      if [ ! -d "$VENV_DIR" ]; then
-        echo "📦 Erstelle venv..."
-        python3 -m venv "$VENV_DIR"
-      fi
-      
-      source "$VENV_DIR/bin/activate"
-      echo "📦 Installiere/aktualisiere Dependencies..."
-      pip install --upgrade pip setuptools wheel
-      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-      pip install pillow numpy scipy onnx onnxruntime sqlalchemy pydantic
-      pip install -q -r requirements.txt 2>/dev/null || true
-
       echo "🌐 ComfyUI läuft auf http://localhost:8188"
-      python main.py --listen 127.0.0.1 --port 8188
+      ${python}/bin/python main.py --listen 127.0.0.1 --port 8188
     '')
   ];
 
