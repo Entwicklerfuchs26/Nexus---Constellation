@@ -11,6 +11,7 @@
         ${pkgs.git}/bin/git clone https://github.com/comfyanonymous/ComfyUI.git .
         mkdir -p checkpoints loras custom_nodes outputs input
       fi
+      chown -R fuchs:users "$COMFYUI_DIR"
     '';
   };
 
@@ -37,15 +38,16 @@
       if [ ! -d "$VENV_DIR" ]; then
         echo "📦 Erstelle venv..."
         python3 -m venv "$VENV_DIR"
-        source "$VENV_DIR/bin/activate"
-        pip install --upgrade pip
-        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-        pip install pillow numpy scipy onnx onnxruntime
-      else
-        source "$VENV_DIR/bin/activate"
       fi
+      
+      source "$VENV_DIR/bin/activate"
+      echo "📦 Installiere/aktualisiere Dependencies..."
+      pip install --upgrade pip setuptools wheel
+      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+      pip install pillow numpy scipy onnx onnxruntime sqlalchemy pydantic
+      pip install -q -r requirements.txt 2>/dev/null || true
 
-      echo "🌐 ComfyUI: http://localhost:8188"
+      echo "🌐 ComfyUI läuft auf http://localhost:8188"
       python main.py --listen 127.0.0.1 --port 8188
     '')
   ];
