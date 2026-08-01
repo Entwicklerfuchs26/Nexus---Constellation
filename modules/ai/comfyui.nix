@@ -148,7 +148,114 @@ let
     comfy-aimdo
     comfyui-frontend-package
     spandrel
+
+    # ComfyUI-Manager (custom_nodes/ComfyUI-Manager) — eigene Laufzeit-Deps.
+    # NICHT dabei: uv/pip laufen im Manager nur, um fehlende Custom-Node-
+    # Abhängigkeiten live nachzuinstallieren. Das Nix-Python liegt read-only
+    # im Store — "Install missing dependencies" im Manager-UI schlägt daher
+    # mit Permission-Fehlern fehl. uv selbst ist trotzdem in der Liste, weil
+    # Manager es beim Start importiert (Feature-Detection); der eigentliche
+    # Install-Versuch scheitert dann kontrolliert statt beim Import schon.
+    gitpython
+    pygithub
+    matrix-nio
+    huggingface-hub
+    typer
+    rich
+    toml
+    uv
+    chardet
   ]);
+
+  startComfyui = pkgs.writeShellScriptBin "start-comfyui" ''
+    #!/usr/bin/env bash
+    set -e
+    COMFYUI_DIR="${comfyuiDir}"
+
+    if [ ! -d "$COMFYUI_DIR/.git" ]; then
+      echo "❌ ComfyUI nicht installiert (nixos-rebuild switch fehlt noch)"
+      exit 1
+    fi
+
+    # ComfyUI findet seine eigenen Module (comfy, comfy_api, comfy_execution,
+    # app, ...) über sys.path[0], also das Verzeichnis von main.py — das
+    # passiert automatisch beim direkten Aufruf "python main.py" aus
+    # COMFYUI_DIR heraus. PYTHONPATH hier trotzdem explizit setzen, robust
+    # falls main.py mal über -m oder einen Symlink gestartet wird.
+    export PYTHONPATH="$COMFYUI_DIR''${PYTHONPATH:+:$PYTHONPATH}"
+
+    # Reduziert VRAM-Fragmentierung bei Modellwechseln auf der 8GB-Karte.
+    export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
+
+    cd "$COMFYUI_DIR"
+    echo "🌐 ComfyUI läuft auf http://127.0.0.1:8188"
+    # --reserve-vram: GPU wird auch vom Desktop (Hyprland) genutzt, 1GB
+    # Reserve lassen. Per Aufruf überschreibbar, z.B.:
+    #   start-comfyui --reserve-vram 0.5
+    exec ${python}/bin/python main.py \
+      --listen 127.0.0.1 --port 8188 \
+      --reserve-vram 1.0 \
+      "$@"
+  '';
+
+  comfyuiUrl = "http://127.0.0.1:8188";
+
+  # Muster, um den Backend-Prozess später wiederzufinden (pkill -f) — bleibt
+  # unabhängig von zusätzlichen Argumenten stabil, die start-comfyui
+  # durchreicht (--reserve-vram etc. stehen erst danach).
+  comfyuiProcessPattern = "main.py --listen 127.0.0.1 --port 8188";
+
+  # Rofi-Starter (SUPER+R -> drun): Backend im Hintergrund starten falls
+  # noch nicht erreichbar, warten bis der Server antwortet, dann Vivaldi im
+  # --app-Modus öffnen (kein Adressleisten-/Tab-Fenster, nur die Web-UI).
+  # Läuft NICHT per exec in Vivaldi rein, sondern wartet im Vordergrund auf
+  # dessen Beenden — sobald das Fenster zu ist, wird das Backend mitbeendet
+  # (App-artiges Verhalten statt dauerhaft laufendem Hintergrunddienst).
+  #
+  # WICHTIG: eigenes --user-data-dir. Vivaldi ist Single-Instance pro Profil
+  # (der User hat i.d.R. schon eine Instanz mit --remote-debugging-port=9222
+  # für die Vivaldi-MCP-Steuerung offen) — ohne eigenes Profil würde
+  # "vivaldi --app=..." das Fenster nur an die schon laufende Instanz
+  # durchreichen und sich selbst sofort beenden. Dann hätte das Skript
+  # gedacht, das Fenster sei geschlossen, und das Backend augenblicklich
+  # gekillt (genau der Bug: GUI "lädt ewig", weil das Backend schon weg war,
+  # bevor die Seite fertig war). Mit eigenem Profil ist es eine echte
+  # eigenständige Instanz, der Aufruf blockiert also bis zum echten Schließen.
+  comfyuiVivaldiProfile = "$HOME/.local/share/comfyui-vivaldi-profile";
+
+  comfyuiLauncher = pkgs.writeShellScriptBin "comfyui-launcher" ''
+    #!/usr/bin/env bash
+    LOG="$HOME/.cache/comfyui-launcher.log"
+
+    if ! ${pkgs.curl}/bin/curl -s --max-time 1 -o /dev/null "${comfyuiUrl}"; then
+      ${pkgs.libnotify}/bin/notify-send "ComfyUI" "Starte Backend..." --icon=applications-graphics
+      setsid -f ${startComfyui}/bin/start-comfyui >"$LOG" 2>&1 < /dev/null
+
+      for _ in $(seq 1 60); do
+        if ${pkgs.curl}/bin/curl -s --max-time 1 -o /dev/null "${comfyuiUrl}"; then
+          break
+        fi
+        sleep 1
+      done
+    fi
+
+    ${pkgs.vivaldi}/bin/vivaldi \
+      --user-data-dir="${comfyuiVivaldiProfile}" \
+      --no-first-run --no-default-browser-check \
+      --app="${comfyuiUrl}"
+
+    # Fenster wurde geschlossen -> Backend mit beenden.
+    ${pkgs.procps}/bin/pkill -f "${comfyuiProcessPattern}" || true
+  '';
+
+  comfyuiDesktopItem = pkgs.makeDesktopItem {
+    name = "comfyui";
+    desktopName = "ComfyUI";
+    comment = "Bildgenerierung (Pony Diffusion XL)";
+    icon = "applications-graphics";
+    exec = "${comfyuiLauncher}/bin/comfyui-launcher";
+    categories = [ "Graphics" ];
+  };
 in
 {
   # Repo nur klonen, wenn es noch nicht existiert. Keine models/-Unterordner
@@ -166,6 +273,13 @@ in
         ${pkgs.git}/bin/git clone https://github.com/comfyanonymous/ComfyUI.git "${comfyuiDir}"
         chown -R fuchs:users "${comfyuiDir}"
       fi
+
+      MANAGER_DIR="${comfyuiDir}/custom_nodes/ComfyUI-Manager"
+      if [ ! -d "$MANAGER_DIR/.git" ]; then
+        echo "[ComfyUI] Installiere ComfyUI-Manager..."
+        ${pkgs.git}/bin/git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$MANAGER_DIR"
+        chown -R fuchs:users "$MANAGER_DIR"
+      fi
     '';
   };
 
@@ -174,36 +288,9 @@ in
     git
     libGL
     ffmpeg
-    (writeShellScriptBin "start-comfyui" ''
-      #!/usr/bin/env bash
-      set -e
-      COMFYUI_DIR="${comfyuiDir}"
-
-      if [ ! -d "$COMFYUI_DIR/.git" ]; then
-        echo "❌ ComfyUI nicht installiert (nixos-rebuild switch fehlt noch)"
-        exit 1
-      fi
-
-      # ComfyUI findet seine eigenen Module (comfy, comfy_api, comfy_execution,
-      # app, ...) über sys.path[0], also das Verzeichnis von main.py — das
-      # passiert automatisch beim direkten Aufruf "python main.py" aus
-      # COMFYUI_DIR heraus. PYTHONPATH hier trotzdem explizit setzen, robust
-      # falls main.py mal über -m oder einen Symlink gestartet wird.
-      export PYTHONPATH="$COMFYUI_DIR''${PYTHONPATH:+:$PYTHONPATH}"
-
-      # Reduziert VRAM-Fragmentierung bei Modellwechseln auf der 8GB-Karte.
-      export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
-
-      cd "$COMFYUI_DIR"
-      echo "🌐 ComfyUI läuft auf http://127.0.0.1:8188"
-      # --reserve-vram: GPU wird auch vom Desktop (Hyprland) genutzt, 1GB
-      # Reserve lassen. Per Aufruf überschreibbar, z.B.:
-      #   start-comfyui --reserve-vram 0.5
-      exec ${python}/bin/python main.py \
-        --listen 127.0.0.1 --port 8188 \
-        --reserve-vram 1.0 \
-        "$@"
-    '')
+    startComfyui
+    comfyuiLauncher
+    comfyuiDesktopItem
   ];
 
   environment.shellAliases = {

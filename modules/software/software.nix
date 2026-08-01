@@ -2,6 +2,19 @@
 
 let
   userPackages = import ../../pkgs/user-packages.nix { inherit pkgs; };
+
+  # Krita (Qt5) hat unter nativem Wayland einen bekannten Bug: externes
+  # Drag & Drop aus Wayland-nativen GTK-Apps (z.B. Nautilus) kommt nicht an.
+  # Fix: über XWayland laufen lassen, dort funktioniert das X11-DnD-Protokoll
+  # zuverlässig (wird von Hyprland gebridget).
+  krita-xwayland = pkgs.symlinkJoin {
+    name = "krita-xwayland";
+    paths = [ pkgs.krita ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/krita --set QT_QPA_PLATFORM xcb
+    '';
+  };
 in {
   # flatpak
   services.flatpak.enable = true;
@@ -50,7 +63,7 @@ programs.obs-studio = {
 
     # Grafik & 3D
     blender
-    krita
+    krita-xwayland
     darktable
 
     # Media
