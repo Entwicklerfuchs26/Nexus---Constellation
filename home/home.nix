@@ -19,6 +19,8 @@
       ./quickshell-sidebar.nix
       ./quickshell-dashboard.nix
       ./activitywatch.nix
+      ./focustime.nix
+      ./nexus-eq.nix
     ];
     home.packages = with pkgs; [
       vivaldi

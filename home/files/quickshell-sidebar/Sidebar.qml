@@ -9,11 +9,10 @@ Scope {
     id: root
 
     readonly property int collapsedWidth: 4
-    // War 64 (reine Icon-Leiste) - jetzt breiter, damit beim Hover eines einzelnen
-    // Icons das Label rechts daneben Platz hat (siehe SidebarButton.qml).
-    readonly property int expandedWidth: 180
-    readonly property int mediaPanelWidth: 380
-    readonly property int mediaPanelHeight: 340
+    // Reine Icon-Leiste, keine Hover-Labels mehr (siehe SidebarButton.qml).
+    readonly property int expandedWidth: 64
+    readonly property int mediaPanelWidth: 360
+    readonly property int mediaPanelHeight: 600
 
     // App-Shortcuts: hier konfigurierbar (Icon-Theme-Name + Exec-Kommando).
     readonly property var appShortcuts: [
@@ -183,7 +182,7 @@ Scope {
                         hoverColor: colors.primary
                         foregroundColor: colors.primary
                         labelColor: colors.surfaceText
-                        onClicked: Quickshell.execDetached(["notify-send", "Dashboard", "Noch nicht implementiert"])
+                        onClicked: Quickshell.execDetached(["quickshell", "ipc", "-c", "nexus-dashboard", "call", "dashboard", "toggle"])
                     }
 
                     SidebarButton {

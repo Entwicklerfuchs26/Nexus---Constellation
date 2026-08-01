@@ -18,7 +18,7 @@ Item {
 
     readonly property bool hovered: mouseArea.containsMouse
 
-    implicitWidth: iconArea.width + (root.hovered && root.tooltipText !== "" ? label.implicitWidth + 8 : 0)
+    implicitWidth: iconArea.width
     implicitHeight: 40
 
     Rectangle {
@@ -56,20 +56,6 @@ Item {
             height: 24
             source: root.iconName !== "" ? Quickshell.iconPath(root.iconName) : ""
         }
-    }
-
-    Text {
-        id: label
-        anchors.left: iconArea.right
-        anchors.leftMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        text: root.tooltipText
-        font.family: "JetBrains Mono"
-        font.pixelSize: 11
-        color: root.labelColor
-        visible: opacity > 0
-        opacity: root.hovered ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 120 } }
     }
 
     MouseArea {

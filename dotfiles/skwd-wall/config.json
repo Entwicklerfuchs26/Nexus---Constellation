@@ -1,0 +1,24 @@
+{
+  "monitor": "DP-1",
+  "components": {
+    "wallpaperSelector": {
+      "enabled": true,
+      "displayMode": "hex",
+      "hexRadius": 110,
+      "hexCols": 9
+    }
+  },
+  "integrations": [
+    {
+      "name": "skwd-wall",
+      "template": "quickshell-colors.json",
+      "output": "colors.json"
+    }
+  ],
+  "postProcessing": [
+    {
+      "command": "~/.config/skwd-wall/scripts/matugen-apply.sh",
+      "type": "all"
+    }
+  ]
+}

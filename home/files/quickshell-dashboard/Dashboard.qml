@@ -15,7 +15,14 @@ Scope {
     Process {
         id: waybarToggle
     }
-    onOpenChanged: waybarToggle.exec(["pkill", "-USR1", "waybar"])
+    // QML cached ein Image unter gleichbleibender source-URL, auch wenn sich die
+    // Datei auf der Platte ändert (current.jpg wird bei jedem Wallpaper-Wechsel
+    // überschrieben) - daher beim Öffnen ein Cache-Busting-Suffix hochzählen.
+    property int _wallpaperReloadKey: 0
+    onOpenChanged: {
+        waybarToggle.exec(["pkill", "-USR1", "waybar"])
+        if (root.open) root._wallpaperReloadKey++
+    }
 
     // ── Matugen-Farben (live, reaktiv) ──────────────────────────────────────
     // Gleiche Quelle/Architektur wie die Sidebar (Sidebar.qml).
@@ -105,28 +112,6 @@ Scope {
                 ClockWidget { textColor: colors.surfaceText }
             }
             DashboardCard {
-                title: "System-Monitor"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
-                SystemMonitorWidget { textColor: colors.surfaceText; ringColor: colors.primary; trackColor: Qt.rgba(colors.outline.r, colors.outline.g, colors.outline.b, 0.25) }
-            }
-        }
-    }
-
-    Component {
-        id: dp3Layout
-        GridLayout {
-            columns: 2
-            rowSpacing: 28
-            columnSpacing: 28
-
-            DashboardCard {
-                title: "Netzwerk"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
-                NetworkWidget { textColor: colors.surfaceText; accentColor: colors.primary }
-            }
-            DashboardCard {
-                title: "Speicherplatz"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
-                DiskWidget { textColor: colors.surfaceText; accentColor: colors.primary; warnColor: colors.tertiary; dangerColor: colors.error }
-            }
-            DashboardCard {
                 title: "Updates"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
                 UpdateWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText; warnColor: colors.tertiary }
             }
@@ -138,9 +123,57 @@ Scope {
                 title: "Skill Tree"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
                 SkillTreeWidget { textColor: colors.surfaceText; accentColor: colors.primary; accentTextColor: colors.primaryText }
             }
+        }
+    }
+
+    Component {
+        id: dp3Layout
+        ColumnLayout {
+            spacing: 28
+
             DashboardCard {
-                title: "Activity"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
-                ActivityWidget { textColor: colors.surfaceText; accentColor: colors.primary }
+                id: focusTimeCard
+                Layout.fillWidth: true
+                Layout.preferredHeight: 610
+                title: "FocusTime"; textColor: colors.surfaceText
+                color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, focusTimeWidget.cardOpacity)
+                border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                FocusTimeWidget {
+                    id: focusTimeWidget
+                    textColor: colors.surfaceText
+                    subTextColor: colors.outline
+                    accentColor: colors.primary
+                    accent2Color: colors.secondary
+                    baseColor: colors.surface
+                    boxColor: colors.surfaceContainer
+                    peachColor: colors.tertiary
+                    cardOpacity: 0.55
+                    active: root.open
+                }
+            }
+
+            GridLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 320
+                columns: 2
+                rowSpacing: 28
+                columnSpacing: 28
+
+                DashboardCard {
+                    title: "Speicherplatz"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                    DiskWidget { textColor: colors.surfaceText; accentColor: colors.primary; warnColor: colors.tertiary; dangerColor: colors.error }
+                }
+                DashboardCard {
+                    title: "System Usage"; textColor: colors.surfaceText; color: Qt.rgba(colors.surface.r, colors.surface.g, colors.surface.b, 0.65); border.color: Qt.rgba(colors.primary.r, colors.primary.g, colors.primary.b, 0.15); border.width: 1
+                    SystemUsageWidget {
+                        textColor: colors.surfaceText
+                        subTextColor: colors.outline
+                        accentColor: colors.primary
+                        baseColor: colors.surface
+                        contrastTextColor: colors.primaryText
+                        active: root.open
+                    }
+                }
             }
         }
     }
@@ -214,10 +247,10 @@ Scope {
                 Image {
                     id: wallpaper
                     anchors.fill: parent
-                    source: "file:///home/fuchs/.cache/skwd-wall/wallpaper/current.jpg"
+                    source: "file:///home/fuchs/.cache/skwd-wall/wallpaper/current.jpg?" + root._wallpaperReloadKey
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
-                    cache: true
+                    cache: false
 
                     layer.enabled: true
                     layer.effect: MultiEffect {
