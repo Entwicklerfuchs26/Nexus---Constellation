@@ -173,6 +173,41 @@ in {
 
         # git als fuchs – wird vom safe-rebuild.sh intern via sudo -u fuchs genutzt
         # (kein eigenständiges NOPASSWD für git, nur über safe-rebuild.sh)
+
+        # sandbox-nexus-Testcontainer (siehe sojus-core/nexus/sandbox-nexus-container.nix
+        # + fuchs-sandbox-control-nexus.nix) — Start/Stop/Status für fuchs-sandbox-control-nexus
+        {
+          command = "/run/current-system/sw/bin/systemctl start container@sandbox-nexus.service";
+          options = [ "NOPASSWD" ];
+        }
+        {
+          command = "/run/current-system/sw/bin/systemctl stop container@sandbox-nexus.service";
+          options = [ "NOPASSWD" ];
+        }
+        {
+          command = "/run/current-system/sw/bin/systemctl status container@sandbox-nexus.service";
+          options = [ "NOPASSWD" ];
+        }
+        {
+          command = "/run/current-system/sw/bin/systemctl status container@sandbox-nexus.service --no-pager";
+          options = [ "NOPASSWD" ];
+        }
+        {
+          command = "/home/sojus/bin/sandbox-nexus-sync.sh";
+          options = [ "NOPASSWD" ];
+        }
+        # Deklarative Container werden vom Host-switch NICHT automatisch
+        # reprovisioniert, wenn sie zum Zeitpunkt des Switch nicht liefen —
+        # das persistente Container-Rootfs bleibt sonst auf dem
+        # allerersten Stand hängen (auf darwin26 live reproduziert, siehe
+        # darwin26/fuchs-safe-rebuild.nix). stop+rm+start reprovisioniert
+        # zuverlässig frisch aus der aktuellen Config; Testcontainer sind
+        # ohnehin Wegwerf-State (echte Daten liegen im bindMount, nicht im
+        # Container-Rootfs selbst).
+        {
+          command = "/run/current-system/sw/bin/rm -rf /var/lib/nixos-containers/sandbox-nexus";
+          options = [ "NOPASSWD" ];
+        }
       ];
     }
   ];
