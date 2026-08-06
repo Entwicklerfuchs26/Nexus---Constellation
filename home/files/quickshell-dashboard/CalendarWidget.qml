@@ -8,10 +8,82 @@ Item {
     clip: true
 
     property color textColor: "#ffffff"
+    property color subTextColor: "#aaaaaa"
+    property color accentColor: "#c6b22b"
+    property color boxColor: "#201d13"
+    property color errorColor: "#ba1a1a"
+    property bool active: true
 
     property bool configured: false
-    property var days: []
+    property var selectedDate: calendar._todayMidnight()
+    property var dayBuckets: ({})
+    property var fetchRangeStart: null
+    property var fetchRangeEnd: null
+    property var _pendingRangeStart: null
+    property var _pendingRangeEnd: null
+    property var nowTick: new Date()
 
+    readonly property int hourHeight: 48
+    readonly property int gridPad: 8
+    readonly property var currentDay: calendar.dayBuckets[calendar._isoDate(calendar.selectedDate)] || { allDay: [], timed: [] }
+
+    Timer {
+        interval: 30000
+        running: calendar.active
+        repeat: true
+        onTriggered: calendar.nowTick = new Date()
+    }
+
+    // ── Datums-Helfer ────────────────────────────────────────────────────
+    function _pad2(n) { return (n < 10 ? "0" : "") + n }
+    function _isoDate(d) { return d.getFullYear() + "-" + calendar._pad2(d.getMonth() + 1) + "-" + calendar._pad2(d.getDate()) }
+    function _todayMidnight() { var d = new Date(); d.setHours(0, 0, 0, 0); return d }
+    function _addDays(d, n) { var r = new Date(d); r.setDate(r.getDate() + n); return r }
+    function _sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate() }
+    function _nowMinutes() { var n = calendar.nowTick; return n.getHours() * 60 + n.getMinutes() }
+
+    function headerLabel() {
+        var today = calendar._todayMidnight()
+        if (calendar._sameDay(calendar.selectedDate, today)) return "Heute"
+        if (calendar._sameDay(calendar.selectedDate, calendar._addDays(today, 1))) return "Morgen"
+        if (calendar._sameDay(calendar.selectedDate, calendar._addDays(today, -1))) return "Gestern"
+        return Qt.formatDate(calendar.selectedDate, "dddd")
+    }
+
+    function navPrev() { calendar.selectDay(calendar._addDays(calendar.selectedDate, -1)) }
+    function navNext() { calendar.selectDay(calendar._addDays(calendar.selectedDate, 1)) }
+
+    function selectDay(d) {
+        calendar.selectedDate = d
+        if (!calendar.fetchRangeStart || d < calendar.fetchRangeStart || d > calendar.fetchRangeEnd) {
+            calendar.fetchEvents(d)
+        }
+        Qt.callLater(calendar._scrollToRelevant)
+    }
+
+    function openInBrowser() {
+        if (!calendar.configured) return
+        var url = calendar._origin() + "/apps/calendar/timeGridDay/" + calendar._isoDate(calendar.selectedDate)
+        launcher.exec(["xdg-open", url])
+    }
+
+    function _scrollToRelevant() {
+        if (!timelineFlick.visible) return
+        var totalHeight = calendar.hourHeight * 24
+        if (calendar._sameDay(calendar.selectedDate, calendar._todayMidnight())) {
+            var y = calendar.gridPad + (calendar._nowMinutes() / 1440) * totalHeight
+            timelineFlick.contentY = Math.max(0, y - timelineFlick.height * 0.35)
+        } else {
+            var earliest = 7 * 60
+            if (calendar.currentDay.timed.length > 0) earliest = calendar.currentDay.timed[0].startMin
+            var y2 = calendar.gridPad + (earliest / 1440) * totalHeight
+            timelineFlick.contentY = Math.max(0, y2 - 40)
+        }
+    }
+
+    Process { id: launcher }
+
+    // ── iCal-Parsing ─────────────────────────────────────────────────────
     function unescapeIcal(s) {
         return s.replace(/\\n/gi, " ").replace(/\\,/g, ",").replace(/\\;/g, ";").replace(/\\\\/g, "\\")
     }
@@ -28,16 +100,6 @@ Item {
         return { date: new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]), allDay: false }
     }
 
-    function sameDay(a, b) {
-        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-    }
-
-    function dayLabel(offset, date) {
-        if (offset === 0) return "Heute"
-        if (offset === 1) return "Morgen"
-        return Qt.formatDate(date, "dddd")
-    }
-
     function parseEvents(icalText) {
         var events = []
         var blocks = icalText.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) || []
@@ -47,53 +109,102 @@ Item {
             if (!startMatch) continue
             var start = calendar.parseICalDate(startMatch[1].trim())
             if (!start) continue
+            var endMatch = block.match(/^DTEND[^:\r\n]*:([^\r\n]*)/m)
+            var end = endMatch ? calendar.parseICalDate(endMatch[1].trim()) : null
             var summaryMatch = block.match(/^SUMMARY[^:\r\n]*:([^\r\n]*)/m)
             var summary = summaryMatch ? calendar.unescapeIcal(summaryMatch[1].trim()) : "(ohne Titel)"
-            events.push({ date: start.date, allDay: start.allDay, summary: summary })
+
+            var endDate = end ? end.date : null
+            if (!endDate) {
+                endDate = new Date(start.date)
+                if (start.allDay) endDate.setDate(endDate.getDate() + 1)
+                else endDate.setMinutes(endDate.getMinutes() + 60)
+            }
+            events.push({ start: start.date, end: endDate, allDay: start.allDay, summary: summary })
         }
-        events.sort(function (a, b) { return a.date - b.date })
+        events.sort(function (a, b) { return a.start - b.start })
         return events
     }
 
-    function rebuildDays(events) {
-        var today = new Date()
-        today.setHours(0, 0, 0, 0)
-        var buckets = []
-        for (var offset = 0; offset < 4; offset++) {
-            var d = new Date(today)
-            d.setDate(d.getDate() + offset)
-            buckets.push({ label: calendar.dayLabel(offset, d), date: d, events: [] })
+    // ── Tages-Buckets (inkl. Split mehrtägiger Termine) ─────────────────
+    function _assignColumns(list) {
+        var colEnds = []
+        for (var i = 0; i < list.length; i++) {
+            var ev = list[i]
+            var placed = false
+            for (var c = 0; c < colEnds.length; c++) {
+                if (colEnds[c] <= ev.startMin) { ev.col = c; colEnds[c] = ev.endMin; placed = true; break }
+            }
+            if (!placed) { ev.col = colEnds.length; colEnds.push(ev.endMin) }
+        }
+        var maxCols = colEnds.length || 1
+        for (var j = 0; j < list.length; j++) list[j].colCount = maxCols
+    }
+
+    function rebuildBuckets(events, rangeStart, rangeEndInclusive) {
+        var buckets = {}
+        var cursor = new Date(rangeStart)
+        while (cursor <= rangeEndInclusive) {
+            buckets[calendar._isoDate(cursor)] = { allDay: [], timed: [] }
+            cursor.setDate(cursor.getDate() + 1)
         }
         for (var i = 0; i < events.length; i++) {
-            for (var b = 0; b < buckets.length; b++) {
-                if (calendar.sameDay(events[i].date, buckets[b].date)) {
-                    buckets[b].events.push(events[i])
-                    break
+            var ev = events[i]
+            if (ev.allDay) {
+                var d = new Date(ev.start)
+                while (d < ev.end) {
+                    var key = calendar._isoDate(d)
+                    if (buckets[key]) buckets[key].allDay.push(ev)
+                    d.setDate(d.getDate() + 1)
+                }
+            } else {
+                var segStart = new Date(ev.start)
+                while (segStart < ev.end) {
+                    var dayStart = new Date(segStart.getFullYear(), segStart.getMonth(), segStart.getDate())
+                    var dayEnd = new Date(dayStart)
+                    dayEnd.setDate(dayEnd.getDate() + 1)
+                    var segEnd = ev.end < dayEnd ? ev.end : dayEnd
+                    var bKey = calendar._isoDate(dayStart)
+                    if (buckets[bKey]) {
+                        buckets[bKey].timed.push({
+                            summary: ev.summary,
+                            start: segStart,
+                            startMin: segStart.getHours() * 60 + segStart.getMinutes(),
+                            endMin: (segEnd.getTime() === dayEnd.getTime()) ? 1440 : (segEnd.getHours() * 60 + segEnd.getMinutes())
+                        })
+                    }
+                    segStart = segEnd
                 }
             }
         }
-        calendar.days = buckets
+        for (var key2 in buckets) {
+            buckets[key2].timed.sort(function (a, b) { return a.startMin - b.startMin })
+            calendar._assignColumns(buckets[key2].timed)
+        }
+        calendar.dayBuckets = buckets
+        Qt.callLater(calendar._scrollToRelevant)
     }
 
+    // ── CalDAV-Abruf (REPORT via curl/Process, XMLHttpRequest kann kein REPORT) ──
     function _origin() {
         return creds.caldavUrl.replace(/\/+$/, "")
     }
 
-    // Qt/QML's XMLHttpRequest rejects non-standard HTTP verbs ("Unsupported HTTP
-    // method type"), so the CalDAV REPORT request has to go through curl via
-    // Process instead (same rationale as CredentialsLoader's Process-based read).
     function _shQuote(s) {
         return "'" + String(s).replace(/'/g, "'\\''") + "'"
     }
 
-    function fetchEvents() {
+    function fetchEvents(centerDate) {
         var calendars = creds.caldavCalendars
         if (calendars.length === 0) return
 
-        var today = new Date()
-        today.setHours(0, 0, 0, 0)
-        var rangeEnd = new Date(today)
-        rangeEnd.setDate(rangeEnd.getDate() + 4)
+        var center = centerDate || calendar.selectedDate
+        var rangeStart = calendar._addDays(center, -7)
+        var rangeEndExclusive = calendar._addDays(center, 22)
+        calendar.fetchRangeStart = rangeStart
+        calendar.fetchRangeEnd = calendar._addDays(rangeEndExclusive, -1)
+        calendar._pendingRangeStart = rangeStart
+        calendar._pendingRangeEnd = calendar.fetchRangeEnd
 
         var pad = function (n) { return (n < 10 ? "0" : "") + n }
         var fmt = function (d) { return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + "T000000Z" }
@@ -102,7 +213,7 @@ Item {
             + '<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">'
             + '<D:prop><D:getetag/><C:calendar-data/></D:prop>'
             + '<C:filter><C:comp-filter name="VCALENDAR"><C:comp-filter name="VEVENT">'
-            + '<C:time-range start="' + fmt(today) + '" end="' + fmt(rangeEnd) + '"/>'
+            + '<C:time-range start="' + fmt(rangeStart) + '" end="' + fmt(rangeEndExclusive) + '"/>'
             + '</C:comp-filter></C:comp-filter></C:filter>'
             + '</C:calendar-query>'
 
@@ -136,8 +247,8 @@ Item {
                 console.log("Kalender-Widget: Parse-Fehler", e)
             }
         }
-        merged.sort(function (a, b) { return a.date - b.date })
-        calendar.rebuildDays(merged)
+        merged.sort(function (a, b) { return a.start - b.start })
+        calendar.rebuildBuckets(merged, calendar._pendingRangeStart, calendar._pendingRangeEnd)
     }
 
     Process {
@@ -151,7 +262,7 @@ Item {
         id: creds
         onCredentialsLoaded: {
             calendar.configured = !creds.isPlaceholder(creds.caldavUrl, "CALDAV_URL") && creds.caldavCalendars.length > 0
-            if (calendar.configured) calendar.fetchEvents()
+            if (calendar.configured) calendar.fetchEvents(calendar.selectedDate)
         }
     }
 
@@ -159,9 +270,10 @@ Item {
         interval: 300000
         running: true
         repeat: true
-        onTriggered: if (calendar.configured) calendar.fetchEvents()
+        onTriggered: if (calendar.configured) calendar.fetchEvents(calendar.selectedDate)
     }
 
+    // ── UI ───────────────────────────────────────────────────────────────
     Text {
         anchors.centerIn: parent
         visible: !calendar.configured
@@ -174,59 +286,180 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 10
+        spacing: 8
         visible: calendar.configured
 
-        Repeater {
-            model: calendar.days
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            Rectangle {
+                radius: 8
+                color: Qt.rgba(calendar.boxColor.r, calendar.boxColor.g, calendar.boxColor.b, 0.55)
+                Layout.preferredWidth: 26
+                Layout.preferredHeight: 26
+                Text { anchors.centerIn: parent; text: "‹"; color: calendar.textColor; font.pixelSize: 14 }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: calendar.navPrev() }
+            }
 
             ColumnLayout {
-                id: dayCol
-                required property var modelData
                 Layout.fillWidth: true
-                spacing: 3
-                visible: modelData.events.length > 0
-
+                spacing: 0
                 Text {
-                    text: dayCol.modelData.label
+                    Layout.alignment: Qt.AlignHCenter
+                    text: calendar.headerLabel()
                     font.family: "JetBrains Mono"
-                    font.pixelSize: 11
                     font.bold: true
-                    opacity: 0.7
+                    font.pixelSize: 13
                     color: calendar.textColor
+                }
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Qt.formatDate(calendar.selectedDate, "dd. MMMM")
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 10
+                    opacity: 0.55
+                    color: calendar.textColor
+                }
+            }
+
+            Rectangle {
+                radius: 8
+                color: Qt.rgba(calendar.boxColor.r, calendar.boxColor.g, calendar.boxColor.b, 0.55)
+                Layout.preferredWidth: 26
+                Layout.preferredHeight: 26
+                Text { anchors.centerIn: parent; text: "›"; color: calendar.textColor; font.pixelSize: 14 }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: calendar.navNext() }
+            }
+
+            Rectangle {
+                radius: 8
+                color: Qt.rgba(calendar.accentColor.r, calendar.accentColor.g, calendar.accentColor.b, openArea.containsMouse ? 0.35 : 0.18)
+                Layout.preferredWidth: 26
+                Layout.preferredHeight: 26
+                Text { anchors.centerIn: parent; text: "↗"; color: calendar.textColor; font.pixelSize: 13 }
+                MouseArea { id: openArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: calendar.openInBrowser() }
+            }
+        }
+
+        Flow {
+            Layout.fillWidth: true
+            visible: calendar.currentDay.allDay.length > 0
+            spacing: 6
+
+            Repeater {
+                model: calendar.currentDay.allDay
+                delegate: Rectangle {
+                    required property var modelData
+                    radius: 6
+                    color: Qt.rgba(calendar.accentColor.r, calendar.accentColor.g, calendar.accentColor.b, 0.25)
+                    width: chipText.implicitWidth + 14
+                    height: chipText.implicitHeight + 8
+                    Text {
+                        id: chipText
+                        anchors.centerIn: parent
+                        text: modelData.summary
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 10
+                        color: calendar.textColor
+                    }
+                }
+            }
+        }
+
+        Flickable {
+            id: timelineFlick
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            contentHeight: timelineCol.height
+            Component.onCompleted: calendar._scrollToRelevant()
+
+            Item {
+                id: timelineCol
+                width: timelineFlick.width
+                height: calendar.hourHeight * 24 + calendar.gridPad * 2
+
+                Repeater {
+                    model: 25
+                    delegate: Item {
+                        required property int index
+                        y: calendar.gridPad + index * calendar.hourHeight
+                        width: timelineCol.width
+                        height: 1
+
+                        Text {
+                            text: calendar._pad2(index) + ":00"
+                            font.family: "JetBrains Mono"
+                            font.pixelSize: 9
+                            opacity: 0.4
+                            color: calendar.textColor
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 40
+                            anchors.right: parent.right
+                            height: 1
+                            color: Qt.rgba(calendar.textColor.r, calendar.textColor.g, calendar.textColor.b, 0.08)
+                        }
+                    }
                 }
 
                 Repeater {
-                    model: dayCol.modelData.events
-
-                    RowLayout {
+                    model: calendar.currentDay.timed
+                    delegate: Rectangle {
+                        id: evBlock
                         required property var modelData
-                        Layout.fillWidth: true
-                        spacing: 8
+                        readonly property real colWidth: (timelineCol.width - 44) / modelData.colCount
+                        x: 44 + modelData.col * colWidth
+                        y: calendar.gridPad + (modelData.startMin / 1440) * (calendar.hourHeight * 24)
+                        width: Math.max(4, colWidth - 3)
+                        height: Math.max(16, ((modelData.endMin - modelData.startMin) / 1440) * (calendar.hourHeight * 24))
+                        radius: 5
+                        color: Qt.rgba(calendar.accentColor.r, calendar.accentColor.g, calendar.accentColor.b, 0.32)
+                        border.color: calendar.accentColor
+                        border.width: 1
+                        clip: true
 
                         Text {
-                            text: modelData.allDay ? "Ganztägig" : Qt.formatTime(modelData.date, "hh:mm")
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            text: Qt.formatTime(evBlock.modelData.start, "hh:mm") + " " + evBlock.modelData.summary
                             font.family: "JetBrains Mono"
-                            font.pixelSize: 11
-                            opacity: 0.6
+                            font.pixelSize: 10
                             color: calendar.textColor
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: modelData.summary
-                            font.family: "JetBrains Mono"
-                            font.pixelSize: 12
+                            wrapMode: Text.WordWrap
                             elide: Text.ElideRight
-                            color: calendar.textColor
                         }
+                    }
+                }
+
+                Rectangle {
+                    visible: calendar._sameDay(calendar.selectedDate, calendar._todayMidnight())
+                    x: 40
+                    y: calendar.gridPad + (calendar._nowMinutes() / 1440) * (calendar.hourHeight * 24) - 1
+                    width: timelineCol.width - 40
+                    height: 2
+                    color: calendar.errorColor
+
+                    Rectangle {
+                        width: 8
+                        height: 8
+                        radius: 4
+                        color: calendar.errorColor
+                        anchors.right: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }
         }
 
         Text {
-            visible: calendar.days.length > 0 && calendar.days.every(function (d) { return d.events.length === 0 })
+            Layout.alignment: Qt.AlignHCenter
+            visible: calendar.currentDay.timed.length === 0 && calendar.currentDay.allDay.length === 0
             text: "Keine Termine"
             font.family: "JetBrains Mono"
             font.pixelSize: 12
