@@ -19,6 +19,11 @@
     executable = true;
   };
 
+  home.file.".local/bin/DL" = {
+    source = ./files/dl.sh;
+    executable = true;
+  };
+
   home.file.".local/bin/media-picker" = {
     source = ./files/media-picker.sh;
     executable = true;
