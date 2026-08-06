@@ -76,7 +76,9 @@ programs.obs-studio = {
     cmatrix
 
     # Kommunikation
-    vesktop
+    # electron_42 (aktuelles Default in nixpkgs) bricht den Splash->Main-Übergang;
+    # Vesktop selbst verlangt nur ^40.4.0, daher hier explizit auf electron_40 gepinnt.
+    (vesktop.override { electron_42 = electron_40; })
 
 
     # Cloud & Sync
@@ -105,6 +107,8 @@ programs.obs-studio = {
     wget
     curl
     nodejs
+    termius
+    tmux
 
     # Wissensfestplatte
     kiwix-tools

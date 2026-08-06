@@ -29,9 +29,11 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-  # electron-39 ist EOL aber von vesktop/bitwarden-desktop benötigt
+  # electron-39 ist EOL aber von bitwarden-desktop benötigt
+  # electron-40 ist EOL, aber vesktop verlangt ^40.4.0 (electron_42 in nixpkgs bricht den Splash->Main-Übergang)
   nixpkgs.config.permittedInsecurePackages = [
     "electron-39.8.10"
+    "electron-40.10.5"
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
