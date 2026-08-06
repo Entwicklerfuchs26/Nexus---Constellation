@@ -21,11 +21,9 @@ Alle drei Quickshell-/Waybar-Prozesse laufen **einmal** und bedienen automatisch
 | Widget | Datei | Datenquelle |
 |---|---|---|
 | Kalender | CalendarWidget.qml | CalDAV REPORT via `curl`/Process gegen mehrere Nextcloud-Kalender (`CALDAV_*`) |
-| Wetter | WeatherWidget.qml | Open-Meteo API (kein Key), Koordinaten Pirna |
 | Tasks | TasksWidget.qml + TaskRow.qml | Vikunja REST API (`VIKUNJA_*`) |
 | News Hub | NewsHubWidget.qml | n8n-Webhooks pro Tab (`NEWS_TAB_n_*`) |
 | Sojus Chat | SojusChatWidget.qml | Sojus Core `/v1/chat/completions` (OpenAI-kompatibel) |
-| Uhr & Datum | ClockWidget.qml | lokale Systemzeit |
 | System-Monitor | SystemMonitorWidget.qml + DonutRing.qml | `/proc/stat`, hwmon (k10temp), `nvidia-smi`, `/proc/meminfo` |
 
 **DP-3** (2-Spalten-Grid):
@@ -36,7 +34,6 @@ Alle drei Quickshell-/Waybar-Prozesse laufen **einmal** und bedienen automatisch
 | Speicherplatz | DiskWidget.qml | `df -h` (/, /home, /mnt/\*, /run/media/\*) |
 | Updates | UpdateWidget.qml | `nix flake metadata --json`, Button für `nix flake update` |
 | Sojus-Agenten | AgentsWidget.qml | Sojus Core `/health` (zeigt MCP-Server-Status, kein Tasks/Jobs-Endpoint vorhanden) |
-| Skill Tree | SkillTreeWidget.qml | Web-/Lokal-Buttons aus `SKILLTREE_*` |
 | Activity | ActivityWidget.qml | ActivityWatch REST API (`localhost:5600`) |
 
 **HDMI-A-1** (nur wenn Monitor verbunden, automatisch per `Quickshell.screens`-Filter):
