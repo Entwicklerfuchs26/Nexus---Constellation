@@ -6,10 +6,14 @@ RowLayout {
     required property var task
     property color textColor: "#ffffff"
     property color accentColor: "#c6b22b"
+    property color highColor: "#ba1a1a"
+    property color mediumColor: "#a9a9ff"
     signal toggleRequested()
 
     Layout.fillWidth: true
     spacing: 10
+    opacity: taskRow.task.done ? 0 : 1
+    Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
 
     Rectangle {
         width: 16
@@ -26,6 +30,16 @@ RowLayout {
         }
     }
 
+    Rectangle {
+        visible: taskRow.task.priority > 0
+        width: 8
+        height: 8
+        radius: 4
+        color: taskRow.task.priority >= 3 ? taskRow.highColor
+            : taskRow.task.priority === 2 ? taskRow.mediumColor
+            : taskRow.accentColor
+    }
+
     Text {
         Layout.fillWidth: true
         text: taskRow.task.title
@@ -38,27 +52,10 @@ RowLayout {
     }
 
     Text {
-        visible: taskRow.task.priority > 0
-        text: "P" + taskRow.task.priority
+        text: taskRow.task.dueLabel || ""
         font.family: "JetBrains Mono"
         font.pixelSize: 10
-        opacity: 0.6
-        color: taskRow.textColor
-    }
-
-    Rectangle {
-        radius: 8
-        color: Qt.rgba(taskRow.accentColor.r, taskRow.accentColor.g, taskRow.accentColor.b, taskRow.task.done ? 0.15 : 0.25)
-        Layout.preferredWidth: badgeText.implicitWidth + 14
-        Layout.preferredHeight: badgeText.implicitHeight + 4
-
-        Text {
-            id: badgeText
-            anchors.centerIn: parent
-            text: taskRow.task.done ? "erledigt" : "offen"
-            font.family: "JetBrains Mono"
-            font.pixelSize: 9
-            color: taskRow.textColor
-        }
+        opacity: taskRow.task.overdue ? 0.9 : 0.55
+        color: taskRow.task.overdue ? taskRow.highColor : taskRow.textColor
     }
 }
