@@ -5,6 +5,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+ZIEL_BASIS="$HOME/Videos/Animes"
 DOWNLOADED_SHOWS=()
 
 ntfy_send() {
@@ -16,52 +17,28 @@ ntfy_send() {
 
 download_one() {
     local URL="$1"
+    mkdir -p "$ZIEL_BASIS"
 
-    # URL parsen
-    local SLUG STAFFEL_NR EPISODE_NR
-    SLUG=$(echo "$URL" | sed 's|.*/stream/||' | cut -d'/' -f1)
-    STAFFEL_NR=$(echo "$URL" | grep -oP 'staffel-\K\d+' || true)
-    EPISODE_NR=$(echo "$URL" | grep -oP 'episode-\K\d+' || true)
+    echo "==> $URL"
+    echo "    Ziel: $ZIEL_BASIS"
 
-    # Slug → lesbarer Titel
-    local NAME="" word
-    for word in $(echo "$SLUG" | tr '-' ' '); do
-        NAME="$NAME ${word^}"
-    done
-    NAME="${NAME# }"
+    local LOGFILE RC TITLE LABEL
+    LOGFILE=$(mktemp)
 
-    # Zielordner
-    local STAFFEL_TAG="Staffel_${STAFFEL_NR:-1}"
-    local ZIEL="$HOME/Videos/Animes/$NAME/$STAFFEL_TAG"
-    mkdir -p "$ZIEL"
+    aniworld-dl --url "$URL" --output "$ZIEL_BASIS" --language "German Dub" < /dev/null | tee "$LOGFILE"
+    RC=${PIPESTATUS[0]}
 
-    # Label
-    local LABEL
-    if [ -n "$EPISODE_NR" ]; then
-        LABEL="$NAME – S${STAFFEL_NR}E${EPISODE_NR}"
-    else
-        LABEL="$NAME – Staffel ${STAFFEL_NR:-1} (komplett)"
-    fi
+    TITLE=$(grep -oP 'ANIDL_TITLE::\K.*' "$LOGFILE" | tail -1)
+    rm -f "$LOGFILE"
 
-    echo "==> $LABEL"
-    echo "    Ziel: $ZIEL"
+    LABEL="${TITLE:-$URL}"
 
-    # Provider-Fallback: VOE → Vidmoly → Vidoza
-    local RC=1 PROVIDER
-    for PROVIDER in VOE Vidmoly Vidoza; do
-        echo "  Versuche: $PROVIDER"
-        aniworld "$URL" -a Download -o "$ZIEL" -l "German Dub" -p "$PROVIDER" -nm < /dev/null
-        RC=$?
-        [ $RC -eq 0 ] && break
-        echo "  $PROVIDER fehlgeschlagen"
-    done
-
-    if [ $RC -eq 0 ]; then
+    if [ "$RC" -eq 0 ] && [ -n "$TITLE" ]; then
         echo "==> Fertig!"
         ntfy_send "Download fertig ✓" "$LABEL" "white_check_mark"
-        DOWNLOADED_SHOWS+=("$NAME")
+        DOWNLOADED_SHOWS+=("$TITLE")
     else
-        echo "==> Alle Provider fehlgeschlagen!"
+        echo "==> Fehlgeschlagen!"
         ntfy_send "Download fehlgeschlagen ✗" "$LABEL" "x"
     fi
 }
@@ -87,7 +64,7 @@ if [ ${#DOWNLOADED_SHOWS[@]} -gt 0 ] && command -v AniO &>/dev/null; then
         if [ -z "${SEEN[$SHOW]+x}" ]; then
             SEEN[$SHOW]=1
             echo "  Organisiere: $SHOW"
-            AniO "$HOME/Videos/Animes" --show "$SHOW" --auto
+            AniO "$ZIEL_BASIS" --show "$SHOW" --auto
         fi
     done
     ntfy_send "Metadaten fertig ✓" "${DOWNLOADED_SHOWS[*]}" "sparkles"
