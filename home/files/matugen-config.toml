@@ -27,3 +27,9 @@ output_path = "/home/fuchs/.config/gtk-4.0/gtk.css"
 [templates.gtk3]
 input_path = "/home/fuchs/.config/gtk-3.0/gtk.css.templ"
 output_path = "/home/fuchs/.config/gtk-3.0/gtk.css"
+[templates.cava]
+input_path = "/home/fuchs/.config/cava/config.templ"
+output_path = "/home/fuchs/.config/cava/config"
+[templates.fastfetch]
+input_path = "/home/fuchs/.config/fastfetch/config.jsonc.templ"
+output_path = "/home/fuchs/.config/fastfetch/config.jsonc"

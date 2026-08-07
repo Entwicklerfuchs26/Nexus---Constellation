@@ -76,6 +76,9 @@ matugen -c "$HOME/.config/matugen/config.toml" image "$wallpaper_path" \
 export HYPRLAND_INSTANCE_SIGNATURE="${HYPRLAND_INSTANCE_SIGNATURE:-$(ls /run/user/1000/hypr/ 2>/dev/null | head -1)}"
 bash "$HOME/.config/matugen/apply-borders.sh"
 
+# cava liest seine Config nicht automatisch neu, braucht SIGUSR1.
+pkill -USR1 cava 2>/dev/null || true
+
 # skwd-daemon liefert beim ersten Apply nach einem Mode-Wechsel manchmal noch
 # Farben vom vorherigen Rendering (Race mit der Wallpaper-Transition-Animation).
 # Ein zweiter, identischer Call direkt danach ist reproduzierbar korrekt.

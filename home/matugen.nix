@@ -18,4 +18,6 @@
   };
   home.file.".config/gtk-4.0/gtk.css.templ".source = ./files/gtk4.css.templ;
   home.file.".config/gtk-3.0/gtk.css.templ".source = ./files/gtk3.css.templ;
+  home.file.".config/cava/config.templ".source = ./files/cava-config.templ;
+  home.file.".config/fastfetch/config.jsonc.templ".source = ./files/fastfetch-config.jsonc.templ;
 }
