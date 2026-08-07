@@ -10,6 +10,7 @@ export HYPRLAND_INSTANCE_SIGNATURE="${HYPRLAND_INSTANCE_SIGNATURE:-$(ls /run/use
 /run/current-system/sw/bin/bash /home/fuchs/.config/matugen/apply-borders.sh >> /home/fuchs/skwd-test.log 2>&1
 echo "BORDERS DONE" >> /home/fuchs/skwd-test.log
 /run/current-system/sw/bin/pkill -USR1 cava 2>/dev/null
+/run/current-system/sw/bin/pkill -USR1 kitty 2>/dev/null
 /run/current-system/sw/bin/pkill -USR2 waybar
 /home/fuchs/.config/matugen/papirus-color.sh >> /home/fuchs/skwd-test.log 2>&1
 if pgrep -f nautilus > /dev/null; then

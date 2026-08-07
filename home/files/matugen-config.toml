@@ -33,3 +33,6 @@ output_path = "/home/fuchs/.config/cava/config"
 [templates.fastfetch]
 input_path = "/home/fuchs/.config/fastfetch/config.jsonc.templ"
 output_path = "/home/fuchs/.config/fastfetch/config.jsonc"
+[templates.kitty]
+input_path = "/home/fuchs/.config/kitty/skwd-theme.conf.templ"
+output_path = "/home/fuchs/.config/kitty/skwd-theme.conf"
