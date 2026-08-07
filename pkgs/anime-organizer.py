@@ -24,33 +24,56 @@ TV_FORMATE = {"TV", "TV_SHORT", "ONA"}
 
 SERIES_QUERY = """
 query ($search: String) {
-  Media(search: $search, type: ANIME) {
-    id
-    format
-    title { romaji english native }
-    startDate { year }
-    description(asHtml: false)
-    genres
-    averageScore
-    episodes
-    status
-    coverImage { extraLarge large }
-    bannerImage
-    studios(isMain: true) { nodes { name } }
-    relations {
-      edges {
-        relationType
-        node {
-          id
-          format
-          title { english romaji }
-          startDate { year }
+  Page(perPage: 6) {
+    media(search: $search, type: ANIME, sort: SEARCH_MATCH) {
+      id
+      format
+      title { romaji english native }
+      startDate { year }
+      description(asHtml: false)
+      genres
+      averageScore
+      popularity
+      episodes
+      status
+      coverImage { extraLarge large }
+      bannerImage
+      studios(isMain: true) { nodes { name } }
+      relations {
+        edges {
+          relationType
+          node {
+            id
+            format
+            title { english romaji }
+            startDate { year }
+          }
         }
       }
     }
   }
 }
 """
+
+
+def _pick_best_candidate(search: str, candidates: list):
+    """
+    AniLists eigene Suchrelevanz (sort: SEARCH_MATCH) bevorzugt exakte
+    Titel-Treffer unabhängig von Popularität. Bei Reboots/Neuauflagen mit
+    identischem Kurztitel (z.B. "Fruits Basket" 2001 vs. das deutlich
+    populärere 2019er Reboot "Fruits Basket: 1st Season") landet dadurch oft
+    die falsche, unbekanntere Version an erster Stelle. Deshalb unter allen
+    Kandidaten, die den Titel-Ähnlichkeitscheck bestehen, den mit der
+    höchsten Popularität wählen statt blind den ersten Treffer zu nehmen.
+    """
+    if not candidates:
+        return None
+    similar = [
+        c for c in candidates
+        if titles_similar(search, c["title"].get("english") or c["title"].get("romaji", ""))
+    ]
+    pool = similar or candidates
+    return max(pool, key=lambda c: c.get("popularity") or 0)
 
 
 def query_anilist(title: str):
@@ -76,7 +99,8 @@ def query_anilist(title: str):
             data = resp.json()
             if "errors" in data:
                 return None
-            return data.get("data", {}).get("Media")
+            candidates = data.get("data", {}).get("Page", {}).get("media") or []
+            return _pick_best_candidate(title, candidates)
         except Exception:
             if versuch < 2:
                 time.sleep(3 * (versuch + 1))
@@ -136,6 +160,28 @@ def safe_name(s: str) -> str:
     return re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", s).strip()
 
 
+def _title_with_year(title: str, year) -> str:
+    """
+    AniLists title.english trägt bei Reboots/Neuauflagen (z.B.
+    "Fruits Basket (2019)") das Jahr teils schon im Titel selbst - ohne
+    diesen Check würde z.B. ein Ordner "Fruits Basket (2019) (2019)"
+    entstehen.
+    """
+    if year and not re.search(r"\(\d{4}\)\s*$", title):
+        return f"{title} ({year})"
+    return title
+
+
+def folder_title(title: str, year) -> str:
+    """Ordnername aus Titel + Jahr, siehe _title_with_year()."""
+    return safe_name(_title_with_year(title, year))
+
+
+def display_title(title: str, year) -> str:
+    """Konsolen-Anzeigetitel aus Titel + Jahr, siehe _title_with_year()."""
+    return _title_with_year(title, year)
+
+
 def is_movie(info: dict) -> bool:
     return info.get("format") == "MOVIE"
 
@@ -155,7 +201,7 @@ def find_parent_series(info: dict, anime_dir: Path):
 
         title_en = node["title"].get("english") or node["title"].get("romaji", "")
         year = node.get("startDate", {}).get("year", "")
-        folder = safe_name(f"{title_en} ({year})" if year else title_en)
+        folder = folder_title(title_en, year)
 
         candidate = anime_dir / folder
         if candidate.is_dir():
@@ -300,7 +346,7 @@ def find_videos(path: Path):
 def execute_film(show_dir: Path, info: dict, anime_dir: Path, dry_run: bool):
     title_en = info["title"].get("english") or info["title"].get("romaji", show_dir.name)
     year = info.get("startDate", {}).get("year", "")
-    folder = safe_name(f"{title_en} ({year})" if year else title_en)
+    folder = folder_title(title_en, year)
     target = anime_dir / folder
     videos = find_videos(show_dir)
     video = max(videos, key=lambda v: v.stat().st_size)
@@ -314,7 +360,7 @@ def execute_film(show_dir: Path, info: dict, anime_dir: Path, dry_run: bool):
         ep_num = next_s00_episode(parent_dir)
         new_name = safe_name(f"{parent_title} - S00E{ep_num:02d} - {title_en}{ext}")
 
-        print(f"\n  {title_en} ({year})  [Film → Season 00 von '{parent_dir.name}']")
+        print(f"\n  {display_title(title_en, year)}  [Film → Season 00 von '{parent_dir.name}']")
 
         if dry_run:
             print(f"    [Vorschau] → {parent_dir.name}/Season 00/{new_name}")
@@ -347,7 +393,7 @@ def execute_film(show_dir: Path, info: dict, anime_dir: Path, dry_run: bool):
         return
 
     # Kein Elternserie → eigenständiger Film
-    print(f"\n  {title_en} ({year})  [Film]")
+    print(f"\n  {display_title(title_en, year)}  [Film]")
 
     if dry_run:
         new_name = safe_name(f"{folder}{ext}")
@@ -416,11 +462,11 @@ def execute_film(show_dir: Path, info: dict, anime_dir: Path, dry_run: bool):
 def execute_serie(show_dir: Path, info: dict, anime_dir: Path, dry_run: bool):
     title_en = info["title"].get("english") or info["title"].get("romaji", show_dir.name)
     year = info.get("startDate", {}).get("year", "")
-    folder = safe_name(f"{title_en} ({year})" if year else title_en)
+    folder = folder_title(title_en, year)
     target = anime_dir / folder
     videos = find_videos(show_dir)
 
-    print(f"\n  {title_en} ({year})  [Serie]")
+    print(f"\n  {display_title(title_en, year)}  [Serie]")
 
     if dry_run:
         for v in videos:
@@ -547,7 +593,7 @@ def plan_phase(shows: list, auto: bool, anime_dir: Path) -> list:
         year = info.get("startDate", {}).get("year", "")
         typ = "Film" if is_movie(info) else "Serie"
 
-        print(f"      Gefunden : {title_en} ({year})  [{typ}]")
+        print(f"      Gefunden : {display_title(title_en, year)}  [{typ}]")
         if title_romaji and title_romaji != title_en:
             print(f"      Romaji   : {title_romaji}")
         print(f"      AniList  : https://anilist.co/anime/{info['id']}")
