@@ -1,11 +1,9 @@
 @import 'colors.css';
 
-/* Matugen: libadwaita-Named-Colors ans Wallpaper anpassen. Namen 1:1 aus
-   adw-gtk3s eigener gtk.css übernommen (offizielle Override-Punkte, siehe
-   /nix/store/*-adw-gtk3-*/share/themes/adw-gtk3-dark/gtk-3.0/gtk.css) -
-   wirkt genauso auf native GTK4/libadwaita-Apps, da libadwaita dieselben
-   Namen als öffentliche Theming-API definiert. Ohne das blieben GTK-Fenster
-   bei der festen Adwaita-Akzentfarbe, unabhängig vom Wallpaper. */
+/* Matugen: adw-gtk3-Named-Colors ans Wallpaper anpassen (identischer Block
+   wie gtk-4.0/gtk.css.templ, siehe dort für die Begründung). Bisher gab es
+   für GTK3-Apps (z.B. LibreOffice) überhaupt kein Matugen-Template - sie
+   blieben fest auf adw-gtk3-dark, unabhängig vom Wallpaper. */
 @define-color accent_bg_color {{colors.primary.default.hex}};
 @define-color accent_fg_color {{colors.on_primary.default.hex}};
 @define-color accent_color {{colors.primary.default.hex}};
@@ -42,18 +40,3 @@
 
 @define-color borders {{colors.outline_variant.default.hex}};
 @define-color unfocused_borders {{colors.outline_variant.default.hex}};
-
-/* Nautilus-Spezialfall: transparente Glass-Optik fürs Hyprland-Blur, bewusst
-   eigene rgba-Overlays statt der obigen deckenden Named-Colors. */
-window.nautilus-window {
-    background-color: rgba({{colors.surface.default.red}}, {{colors.surface.default.green}}, {{colors.surface.default.blue}}, 0.82);
-}
-
-window.nautilus-window headerbar {
-    background-color: rgba({{colors.surface.default.red}}, {{colors.surface.default.green}}, {{colors.surface.default.blue}}, 0.90);
-}
-
-window.nautilus-window .sidebar,
-window.nautilus-window .nautilus-list-view {
-    background-color: rgba({{colors.surface.default.red}}, {{colors.surface.default.green}}, {{colors.surface.default.blue}}, 0.72);
-}

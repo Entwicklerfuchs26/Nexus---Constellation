@@ -17,4 +17,5 @@
     executable = true;
   };
   home.file.".config/gtk-4.0/gtk.css.templ".source = ./files/gtk4.css.templ;
+  home.file.".config/gtk-3.0/gtk.css.templ".source = ./files/gtk3.css.templ;
 }
