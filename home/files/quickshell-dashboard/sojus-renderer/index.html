@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<!--
+  Sicherheits-Netz gegen die von Hermes generierten JSX-Snippets: die
+  Component-Bubble lädt diese Seite nur lokal (file://), kein Internet nötig
+  und keins erlaubt. Die CSP blockt jeden Netzwerk-Zugriff (connect-src/
+  img-src/frame-src 'none') selbst falls generierter Code versehentlich
+  fetch()/XHR/<img src="https://...">/iframes versucht — das greift auch
+  wenn die Prompt-Instruktion an Hermes ignoriert wird.
+-->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'none';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval';
+  style-src 'self' 'unsafe-inline';
+  connect-src 'none';
+  img-src 'self' data:;
+  frame-src 'none';
+  object-src 'none';
+">
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  #root { padding: 4px; box-sizing: border-box; }
+  #error {
+    display: none; color: #f38ba8; font-family: monospace; font-size: 12px;
+    white-space: pre-wrap; padding: 8px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<pre id="error"></pre>
+
+<script src="react.production.min.js"></script>
+<script src="react-dom.production.min.js"></script>
+<script src="prop-types.min.js"></script>
+<script src="recharts.umd.js"></script>
+<script src="babel.min.js"></script>
+
+<script>
+// Wird von QML per runJavaScript() aufgerufen, jeweils EIN JSX-Snippet
+// pro Component-Bubble. Rendert es isoliert in #root; Fehler landen
+// sichtbar in #error statt die Bubble leer/kaputt aussehen zu lassen.
+function renderComponent(jsxSource) {
+  var errorEl = document.getElementById("error");
+  var rootEl = document.getElementById("root");
+  errorEl.style.display = "none";
+  errorEl.textContent = "";
+  try {
+    var transformed = Babel.transform(jsxSource, { presets: ["react"] }).code;
+    // Hermes liefert "export default function X() {...}" — im Babel-
+    // Standalone-Sandbox-Kontext gibt es kein ES-Modulsystem, also den
+    // Export in einen lokalen Ausdruck umbiegen, den wir direkt aufrufen
+    // können. Deckt die im System-Prompt geforderte Form ab (genau ein
+    // default-exportierter Functional Component).
+    var wrapped = transformed.replace(
+      /export\s+default\s+function\s+([A-Za-z0-9_]+)/,
+      "function $1"
+    );
+    var factory = new Function(
+      "React", "ReactDOM", "Recharts", "PropTypes",
+      wrapped + "\n;return typeof " + (wrapped.match(/function\s+([A-Za-z0-9_]+)/) || [,"App"])[1] +
+        " !== 'undefined' ? " + (wrapped.match(/function\s+([A-Za-z0-9_]+)/) || [,"App"])[1] + " : null;"
+    );
+    var Component = factory(React, ReactDOM, Recharts, PropTypes);
+    if (!Component) throw new Error("Kein default-exportierter Functional Component gefunden.");
+    var root = ReactDOM.createRoot(rootEl);
+    root.render(React.createElement(Component));
+  } catch (e) {
+    errorEl.style.display = "block";
+    errorEl.textContent = "Render-Fehler: " + (e && e.message ? e.message : String(e));
+    console.error(e);
+  }
+}
+
+// Höhen-Reporting fürs Auto-Resize der Bubble: QML pollt window.document.title
+// (WebEngineView.onTitleChanged ist der einfachste JS→QML-Kanal ohne
+// WebChannel-Boilerplate). Wir schreiben die aktuelle Inhaltshöhe rein,
+// sobald sie sich ändert.
+var lastReportedHeight = 0;
+function reportHeightIfChanged() {
+  var h = document.getElementById("root").scrollHeight;
+  if (h > 0 && h !== lastReportedHeight) {
+    lastReportedHeight = h;
+    document.title = "height:" + h;
+  }
+}
+setInterval(reportHeightIfChanged, 250);
+</script>
+</body>
+</html>

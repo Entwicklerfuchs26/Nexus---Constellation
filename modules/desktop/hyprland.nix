@@ -59,11 +59,20 @@ services.displayManager.defaultSession = "hyprland";
     kdePackages.kirigami
     kdePackages.qqc2-breeze-style
     qt6.qtimageformats
+    # ComponentBubble im Sojus Chat (SojusChatWidget.qml) — rendert von Hermes
+    # generierte React/Recharts-Grafiken lokal per WebEngineView. Live unter
+    # Hyprland+NVIDIA(RTX 2070, Treiber 595.84) getestet, läuft stabil ohne
+    # GPU-Crashes; QTWEBENGINE_DISABLE_SANDBOX unten ist auf NixOS der
+    # übliche Workaround, weil der Chromium-Sandbox-Helper hier nicht
+    # setuid-root installiert ist (kein Sicherheitsproblem für uns, da nur
+    # lokal generierter file://-Inhalt ohne Netzwerkzugriff geladen wird).
+    qt6.qtwebengine
   ];
 
 environment.sessionVariables = {
-  QML2_IMPORT_PATH = "${pkgs.kdePackages.kirigami}/lib/qt-6/qml:${pkgs.qt6.qtmultimedia}/lib/qt-6/qml";
+  QML2_IMPORT_PATH = "${pkgs.kdePackages.kirigami}/lib/qt-6/qml:${pkgs.qt6.qtmultimedia}/lib/qt-6/qml:${pkgs.qt6.qtwebengine}/lib/qt-6/qml";
   XDG_CURRENT_DESKTOP = "Hyprland";
+  QTWEBENGINE_DISABLE_SANDBOX = "1";
 };
 
 environment.etc."sddm.conf.d/theme.conf".text = ''
