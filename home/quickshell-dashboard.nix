@@ -30,12 +30,4 @@
   home.file.".config/quickshell/nexus-dashboard/FocusStatBox.qml".source = ./files/quickshell-dashboard/FocusStatBox.qml;
   home.file.".config/quickshell/nexus-dashboard/FocusBarChart.qml".source = ./files/quickshell-dashboard/FocusBarChart.qml;
   home.file.".config/quickshell/nexus-dashboard/FocusTimeWidget.qml".source = ./files/quickshell-dashboard/FocusTimeWidget.qml;
-  home.file.".config/quickshell/nexus-dashboard/ComponentBubble.qml".source = ./files/quickshell-dashboard/ComponentBubble.qml;
-
-  # React/Recharts/Babel-Standalone-Bundle für ComponentBubble.qml (siehe
-  # SojusChatWidget type:"component"). Symlink zeigt immer auf die aktuell
-  # gebaute Version — home-manager aktualisiert ihn bei jedem Rebuild
-  # automatisch, ComponentBubble.qml referenziert den stabilen Pfad.
-  home.file.".local/share/sojus/renderer".source =
-    import ./files/quickshell-dashboard/sojus-renderer/renderer.nix { inherit pkgs; };
 }
