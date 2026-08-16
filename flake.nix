@@ -47,18 +47,32 @@
       flake = false;
     };
 
+    # AniDL-Scraper-Engine (AniO), bewusst außerhalb des Git-Repos — Scraper-
+    # Code, nicht für das öffentliche GitHub-Repo geeignet.
+    aniworld-dl-src = {
+      url = "path:/etc/nixos/local-scripts/aniworld-dl";
+      flake = false;
+    };
+
+    # AniWorld Downloader GUI (Tkinter + Web), aus gleichem Grund außerhalb
+    # des Git-Repos.
+    aniworld-gui-src = {
+      url = "path:/etc/nixos/aniworld-gui";
+      flake = false;
+    };
+
     # TODO: KI-Repo — eigene KI-Tooling / Automatisierungs-Module
     # ki-modules.url = "github:Entwicklerfuchs26/ki-modules";
   };
 
-  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, custom-fonts, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, custom-fonts, aniworld-dl-src, aniworld-gui-src, ... }@inputs:
   let
     system = "x86_64-linux";
   in
   {
     nixosConfigurations.nexus = nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts; };
+      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src; };
       modules = [
         ./hosts/nexus/hardware-configuration.nix
         ./hosts/nexus/host-config.nix

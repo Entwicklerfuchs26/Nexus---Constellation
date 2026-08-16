@@ -77,6 +77,16 @@
   home.file.".icons/default/index.theme".source = ./files/cursor-index.theme;
   home.file.".config/qt5ct/qt5ct.conf".source = ./files/qt5ct.conf;
 
+  xdg.desktopEntries.aniworld-gui = {
+    name = "AniWorld Downloader";
+    genericName = "Anime Downloader";
+    comment = "Anime von AniWorld suchen und herunterladen";
+    exec = "aniworld-gui";
+    icon = "/etc/nixos/aniworld-gui/icon.png";
+    terminal = false;
+    categories = [ "AudioVideo" "Network" ];
+  };
+
   systemd.user.services.ambient-daemon = {
     Unit = {
       Description = "Hyperion Ambient Light Daemon";

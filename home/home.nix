@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, aniworld-dl-src, aniworld-gui-src, ... }:
 {
   home-manager.users.fuchs = {
     home.username = "fuchs";
@@ -28,9 +28,11 @@
       vscode
       matugen
       mission-center
-      (pkgs.callPackage ../pkgs/aniworld-dl.nix { })
+      (pkgs.callPackage ../pkgs/aniworld-dl.nix { inherit aniworld-dl-src; })
       (pkgs.callPackage ../pkgs/anime-organizer.nix { })
       (pkgs.callPackage ../pkgs/nix-manager.nix { })
+      (pkgs.callPackage ../pkgs/aniworld-gui.nix { inherit aniworld-gui-src; })
+      (pkgs.callPackage ../pkgs/aniworld-web.nix { inherit aniworld-gui-src; })
     ];
     programs.git = {
       enable = true;
