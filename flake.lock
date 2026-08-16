@@ -45,6 +45,19 @@
         "url": "https://codeberg.org/LGFae/awww"
       }
     },
+    "custom-fonts": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786893628,
+        "narHash": "sha256-EHfqi/u4ZWv8JslTEPU9h94IXwdoRbcqmvPDjAIoAeU=",
+        "path": "/etc/nixos/local-fonts",
+        "type": "path"
+      },
+      "original": {
+        "path": "/etc/nixos/local-fonts",
+        "type": "path"
+      }
+    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -225,6 +238,7 @@
       "inputs": {
         "agenix": "agenix",
         "awww": "awww",
+        "custom-fonts": "custom-fonts",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
         "quickshell": "quickshell",
@@ -297,8 +311,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1785775248,
-        "narHash": "sha256-GTFPFPiDHWJ0915JbJ58IX6YPtJWBRUvb217gtlyn4s=",
+        "lastModified": 1786461615,
+        "narHash": "sha256-hsbqdvLSnCnkKNKHlU64AuGU5kNNg0MnT3p5PaLht8M=",
         "path": "/home/fuchs/sojus-core",
         "type": "path"
       },

@@ -40,18 +40,25 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Persönliche Font-Sammlung, bewusst außerhalb des Git-Repos (teils
+    # kommerzielle Fonts, dürfen nicht ins öffentliche GitHub-Repo).
+    custom-fonts = {
+      url = "path:/etc/nixos/local-fonts";
+      flake = false;
+    };
+
     # TODO: KI-Repo — eigene KI-Tooling / Automatisierungs-Module
     # ki-modules.url = "github:Entwicklerfuchs26/ki-modules";
   };
 
-  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, custom-fonts, ... }@inputs:
   let
     system = "x86_64-linux";
   in
   {
     nixosConfigurations.nexus = nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall; };
+      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts; };
       modules = [
         ./hosts/nexus/hardware-configuration.nix
         ./hosts/nexus/host-config.nix
@@ -80,11 +87,7 @@
         ./modules/ai/ollama.nix
         ./modules/ai/sojus.nix
         ./modules/ai/comfyui.nix
-        # Pausiert 2026-07-23: fraßen zusammen ~6,7GB von 8GB VRAM im Leerlauf
-        # (RTX 2070, 8GB). Voice-Layer-Integration läuft jetzt über Hermes statt
-        # sojus-pipeline.py — wieder einkommentieren sobald die Anbindung steht.
-        # ./modules/ai/chatterbox-tts.nix
-        # ./modules/ai/whisper-stt.nix
+        ./modules/ai/chatterbox-tts.nix
         ./modules/core/ldap.nix
         ./modules/software/affinity.nix
         ./home/home.nix

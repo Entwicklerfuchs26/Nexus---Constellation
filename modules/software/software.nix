@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, custom-fonts, ... }:
 
 let
   userPackages = import ../../pkgs/user-packages.nix { inherit pkgs; };
@@ -109,6 +109,7 @@ programs.obs-studio = {
     nodejs
     termius
     tmux
+    cloudflared
 
     # Wissensfestplatte
     kiwix-tools
@@ -154,6 +155,7 @@ programs.obs-studio = {
 
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
+    (pkgs.callPackage ../../pkgs/custom-fonts.nix { inherit custom-fonts; })
   ];
 
   qt = {
