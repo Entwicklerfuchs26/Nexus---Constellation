@@ -17,6 +17,8 @@ Item {
     property string jellyfinApiKey: ""
     property string jellyfinUserId: ""
     property string anilistToken: ""
+    property string approvalUrl: ""
+    property string approvalApiToken: ""
     property bool loaded: false
 
     signal credentialsLoaded()
@@ -52,6 +54,8 @@ Item {
         loader.jellyfinApiKey = map.JELLYFIN_API_KEY || ""
         loader.jellyfinUserId = map.JELLYFIN_USER_ID || ""
         loader.anilistToken = map.ANILIST_TOKEN || ""
+        loader.approvalUrl = map.APPROVAL_URL || ""
+        loader.approvalApiToken = map.APPROVAL_API_TOKEN || ""
         loader.loaded = true
         loader.credentialsLoaded()
     }
