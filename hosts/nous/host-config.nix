@@ -26,7 +26,9 @@
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfUnITva1UT6s0l5G/UhM3pjYxz1UJMgZmp6miGY9Na nexus"
     ];
-    initialPassword = "changeme";
+    # Passwort wurde am 20.08.2026 manuell per chpasswd gesetzt (initialPassword
+    # "changeme" nur für den allerersten Boot verwendet) — nicht Nix-verwaltet,
+    # bei Bedarf lokal mit `passwd` ändern.
   };
 
   services.openssh = {
