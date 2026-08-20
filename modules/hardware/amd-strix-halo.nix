@@ -20,4 +20,19 @@
 
   # IOMMU bewusst NICHT deaktivieren (Community-Guides raten davon ab, außer für reines
   # Desktop-Gaming-Benchmarking — hier irrelevant, nous ist headless).
+
+  # RADV splittet GTT-Speicher standardmäßig in mehrere Heaps (device-local + host-visible,
+  # als Workaround für Spiele mit schlechtem VRAM-Management). Auf einer APU mit Unified
+  # Memory ist das unnötig und sorgt dafür, dass Vulkan-Clients (u.a. Ollama, das gesplittete
+  # Heaps nicht sauber handhabt — offener Bug ollama/ollama#15302) nur die kleinere Hälfte
+  # (~64GB statt ~120GB) sehen. Ein Heap erzwingen:
+  environment.etc."drirc".text = ''
+    <driconf>
+      <device>
+        <application name="Default">
+          <option name="radv_enable_unified_heap_on_apu" value="true" />
+        </application>
+      </device>
+    </driconf>
+  '';
 }
