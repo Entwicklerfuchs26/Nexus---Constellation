@@ -117,6 +117,7 @@
         ./modules/core/users.nix
         ./modules/hardware/amd-strix-halo.nix
         ./modules/ai/ollama-vulkan.nix
+        ./modules/ai/llama-cpp-vulkan.nix
       ];
     };
   };
