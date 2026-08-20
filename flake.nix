@@ -107,5 +107,17 @@
         ./home/home.nix
       ];
     };
+
+    nixosConfigurations.nous = nixpkgs.lib.nixosSystem {
+      inherit system;
+      modules = [
+        ./hosts/nous/hardware-configuration.nix
+        ./hosts/nous/host-config.nix
+
+        ./modules/core/users.nix
+        ./modules/hardware/amd-strix-halo.nix
+        ./modules/ai/ollama-vulkan.nix
+      ];
+    };
   };
 }

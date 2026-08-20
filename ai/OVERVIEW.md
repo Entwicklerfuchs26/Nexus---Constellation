@@ -1,9 +1,20 @@
 # Overview
 
-Dieses Repo ist die NixOS-Flake-Konfiguration für den Host **nexus**: Hyprland als Wayland-Compositor,
-NVIDIA-Treiber, LDAP-Auth gegen `sternenhof.space`, sowie ein Material-You-Theming-System
-(matugen + skwd-wall), das aus dem aktuellen Wallpaper systemweit Farben ableitet und per Templates
-an Waybar, KDE, Hyprlock, GTK, Kitty, OpenRGB, Hyperion u. a. verteilt.
+Dieses Repo ist die NixOS-Flake-Konfiguration für zwei Hosts:
+
+- **nexus** — Desktop/Workstation: Hyprland als Wayland-Compositor, NVIDIA-Treiber, LDAP-Auth gegen
+  `sternenhof.space`, sowie ein Material-You-Theming-System (matugen + skwd-wall), das aus dem aktuellen
+  Wallpaper systemweit Farben ableitet und per Templates an Waybar, KDE, Hyprlock, GTK, Kitty, OpenRGB,
+  Hyperion u. a. verteilt.
+- **nous** — GMKtec EVO-X2 (AMD Ryzen AI Max+ 395 „Strix Halo", gfx1151, 128GB Unified RAM), headless,
+  bewusst **reine AI-Inference-Maschine**: aktuell nur Ollama (Vulkan/RADV-Backend), später ComfyUI/TTS/STT.
+  **Architekturentscheidung (20.08.2026):** Sojus/Hermes/Kaira laufen absichtlich NICHT auf nous, obwohl
+  reichlich RAM/CPU frei wäre — darwin26 (wo Hermes/Kaira aktuell laufen) hat ein eigenes RAM-Problem
+  (~15GB, schon eng), das dort gelöst werden sollte statt Agenten-Workloads auf die für große
+  LLM-Modelle vorgesehene Maschine zu verlagern und deren Unified-Memory-Headroom zu fragmentieren.
+  Details/Recherche siehe Plan-Historie in der Session vom 20.08.2026 (BIOS-Fix: "Dedicated Graphics
+  Memory" war zu hoch eingestellt und hat die Hälfte des RAMs vom OS ferngehalten, siehe
+  `modules/hardware/amd-strix-halo.nix`).
 
 ## Repo-Struktur (erste zwei Ebenen)
 
@@ -13,14 +24,15 @@ an Waybar, KDE, Hyprlock, GTK, Kitty, OpenRGB, Hyperion u. a. verteilt.
 ├── dotfiles/                Theming-Engine: matugen-Templates, skwd-wall-Scripts, Install-Skript
 │   ├── matugen/
 │   └── skwd-wall/
-├── flake.nix                Flake-Entrypoint, definiert nixosConfigurations.nexus
+├── flake.nix                Flake-Entrypoint, definiert nixosConfigurations.nexus + nixosConfigurations.nous
 ├── flake.lock
-├── home/                     Home-Manager-Konfiguration
+├── home/                     Home-Manager-Konfiguration (nur nexus, nous hat kein Home-Manager)
 │   ├── files/                deployte Configs (nicht Home-Manager-verwaltet)
 │   └── *.nix
 ├── hosts/                    Host-spezifische Konfiguration
 │   ├── example/               Vorlage für weitere Hosts
-│   └── nexus/                  Hostname, UUIDs, MACs, Benutzer, Firewall
+│   ├── nexus/                  Hostname, UUIDs, MACs, Benutzer, Firewall
+│   └── nous/                   Hostname, Benutzer, Firewall — headless, kein Desktop-Kram
 ├── modules/                  Wiederverwendbare NixOS-Module, siehe ai/MODULES.md
 │   ├── ai/
 │   ├── core/
