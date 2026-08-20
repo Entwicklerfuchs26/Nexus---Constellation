@@ -19,6 +19,9 @@
       OLLAMA_MAX_LOADED_MODELS = "2";   # 128GB RAM bestätigt — 2 mittelgroße Modelle parallel realistisch
       OLLAMA_FLASH_ATTENTION    = "1";
       OLLAMA_CONTEXT_LENGTH     = "32768"; # für agentische Aufgaben mit vollem Kontext, ggf. höher testen
+      # Ohne das hier verwirft Ollama 0.32+ die iGPU automatisch ("dropping integrated
+      # GPU") und rechnet komplett auf CPU — bei Strix Halo ist die iGPU aber der Punkt.
+      OLLAMA_IGPU_ENABLE        = "1";
     };
   };
 }
