@@ -28,12 +28,15 @@ in
       StateDirectory = "llama-cpp";
       Restart = "on-failure";
       RestartSec = "5s";
+      # Modell-Download (~4-5GB) dauert länger als das systemd-Default-Timeout (90s)
+      # für ExecStartPre — sonst killt sich der Service mitten im Download selbst.
+      TimeoutStartSec = "1800";
 
       ExecStartPre = pkgs.writeShellScript "llama-fetch-model" ''
         set -e
         if [ ! -f "${modelDir}/${modelFile}" ]; then
           echo "Lade ${modelFile}..."
-          ${pkgs.curl}/bin/curl -L --fail -o "${modelDir}/${modelFile}.tmp" "${modelUrl}"
+          ${pkgs.curl}/bin/curl -fsSL -C - -o "${modelDir}/${modelFile}.tmp" "${modelUrl}"
           mv "${modelDir}/${modelFile}.tmp" "${modelDir}/${modelFile}"
         fi
       '';
