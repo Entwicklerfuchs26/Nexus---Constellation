@@ -21,6 +21,8 @@
       ./activitywatch.nix
       ./focustime.nix
       ./nexus-eq.nix
+      ./headphone-limiter.nix
+      ./chatterbox-tts.nix
     ];
     home.packages = with pkgs; [
       vivaldi

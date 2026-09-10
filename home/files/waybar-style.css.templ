@@ -18,6 +18,12 @@ window#waybar > box {
 }
 
 .modules-left {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+#left-pill {
   background: rgba({{colors.surface.default.red}}, {{colors.surface.default.green}}, {{colors.surface.default.blue}}, 0.85);
   border-radius: 20px;
   margin: 0 2px 0 0;
@@ -48,6 +54,20 @@ window#waybar > box {
 #workspaces button.active {
   color: {{colors.primary.default.hex}};
   background: rgba({{colors.primary.default.red}}, {{colors.primary.default.green}}, {{colors.primary.default.blue}}, 0.20);
+}
+
+#custom-workspace-label {
+  margin: 0 0 0 8px;
+  padding: 0 6px;
+  min-width: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: {{colors.on_surface_variant.default.hex}};
+}
+
+#custom-workspace-label.named {
+  color: {{colors.primary.default.hex}};
+  font-weight: 600;
 }
 
 #clock {

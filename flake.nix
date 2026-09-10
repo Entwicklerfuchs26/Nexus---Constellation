@@ -93,6 +93,7 @@
         ./modules/hardware/nvidia.nix
         ./modules/hardware/tablet.nix
         ./modules/core/printing.nix
+        ./modules/core/sftp-yuki.nix
         ./modules/software/software.nix
         ./modules/software/gaming.nix
         ./modules/software/docker.nix
@@ -100,6 +101,7 @@
         ./modules/desktop/hyprland.nix
         ./modules/ai/ollama.nix
         ./modules/ai/sojus.nix
+        ./modules/ai/sojus-ssh-logging.nix
         ./modules/ai/comfyui.nix
         ./modules/ai/chatterbox-tts.nix
         ./modules/core/ldap.nix
@@ -117,7 +119,7 @@
         ./modules/core/users.nix
         ./modules/hardware/amd-strix-halo.nix
         ./modules/ai/ollama-vulkan.nix
-        ./modules/ai/llama-cpp-vulkan.nix
+        ./modules/ai/llama-swap.nix
       ];
     };
   };

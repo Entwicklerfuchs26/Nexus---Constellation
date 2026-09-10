@@ -25,6 +25,32 @@
         "type": "github"
       }
     },
+    "aniworld-dl-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786908404,
+        "narHash": "sha256-SUTh+VlDaR/9BI6101vK8/dy/1GLNXaL8XoQPerFEYo=",
+        "path": "/etc/nixos/local-scripts/aniworld-dl",
+        "type": "path"
+      },
+      "original": {
+        "path": "/etc/nixos/local-scripts/aniworld-dl",
+        "type": "path"
+      }
+    },
+    "aniworld-gui-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786903405,
+        "narHash": "sha256-rIgVctNNFX07P+BmBFSvA4tlgYdaHk6bP8ue10VTYzQ=",
+        "path": "/etc/nixos/aniworld-gui",
+        "type": "path"
+      },
+      "original": {
+        "path": "/etc/nixos/aniworld-gui",
+        "type": "path"
+      }
+    },
     "awww": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -237,6 +263,8 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "aniworld-dl-src": "aniworld-dl-src",
+        "aniworld-gui-src": "aniworld-gui-src",
         "awww": "awww",
         "custom-fonts": "custom-fonts",
         "home-manager": "home-manager",
@@ -311,8 +339,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1786461615,
-        "narHash": "sha256-hsbqdvLSnCnkKNKHlU64AuGU5kNNg0MnT3p5PaLht8M=",
+        "lastModified": 1788251450,
+        "narHash": "sha256-MT9hsVYIv0SqlaOaje8rOWV0VtHr44DY1P31g6kG1dk=",
         "path": "/home/fuchs/sojus-core",
         "type": "path"
       },

@@ -46,6 +46,7 @@
       "zugang.sternenhof.space"
       "darwin26.sternenhof.space"
       "sojus.sternenhof.space"
+      "comfyui.sternenhof.space"
     ];
   };
 
@@ -67,10 +68,15 @@
   };
 
   # 1 TB Datenfestplatte (ext4)
+  # Kein x-systemd.automount mehr: der autofs-Stub liess Steams bwrap-Sandbox
+  # abstuerzen ("No such device"), sobald die Platte nicht angeschlossen war
+  # (sie versucht /mnt komplett zu binden und stolpert dabei ueber den
+  # haengenden Mountpoint). Bei angeschlossener Platte manuell mounten:
+  # sudo mount /mnt/data
   fileSystems."/mnt/data" = {
     device = "/dev/disk/by-uuid/299df179-7040-42b8-a6f0-548247cc82f6";
     fsType = "ext4";
-    options = [ "defaults" "nofail" "x-systemd.automount" ];
+    options = [ "defaults" "nofail" "noauto" ];
   };
 
   networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 ];
@@ -99,6 +105,32 @@
     device = "/dev/disk/by-uuid/5abc4798-aa86-48c6-bf31-64206749f67d";
     fsType = "ext4";
     options = [ "defaults" "nofail" "noauto" "x-systemd.automount" "x-systemd.device-timeout=5" ];
+  };
+
+  # Samba-Freigabe für Netzwerk-Scan (Epson "Scan to Folder"): Drucker legt
+  # gescannte Dateien direkt in ~fuchs/Documents ab. Zugang nur für fuchs,
+  # Passwort separat per `sudo smbpasswd -a fuchs` setzen (nicht das Login-PW).
+  services.samba = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      global = {
+        "workgroup" = "WORKGROUP";
+        "server string" = "nexus";
+        "netbios name" = "nexus";
+        "security" = "user";
+        "map to guest" = "never";
+      };
+      scans = {
+        "path" = "/home/fuchs/Documents";
+        "browseable" = "yes";
+        "read only" = "no";
+        "guest ok" = "no";
+        "valid users" = "fuchs";
+        "create mask" = "0664";
+        "directory mask" = "0775";
+      };
+    };
   };
 
   # Hauptbenutzer (aus modules/core/users.nix ausgelagert)

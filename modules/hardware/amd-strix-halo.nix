@@ -1,6 +1,8 @@
 # AMD Strix Halo (Ryzen AI Max+ 395 / Radeon 8060S, gfx1151) — Unified-Memory-Setup für nous.
-# Ollama läuft über Vulkan/RADV (siehe modules/ai/ollama-vulkan.nix), kein ROCm nötig für den
-# Standardfall — nixpkgs' eigenes ROCm hat noch keinen gfx1151-Target.
+# Ollama läuft über Vulkan/RADV (siehe modules/ai/ollama-vulkan.nix). ROCm ist als Backend-
+# Alternative für llama.cpp inzwischen möglich (gfx1151 seit 2026 in nixpkgs' Standard-ROCm-
+# Targets, über cache.nixos.org vorgebaut) — s. llama-server-rocm in modules/ai/llama-swap.nix,
+# bisher nur zum Benchmarken, nicht im aktiven Serving-Pfad.
 { config, pkgs, lib, ... }:
 
 {

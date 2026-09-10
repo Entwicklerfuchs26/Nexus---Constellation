@@ -39,8 +39,28 @@
     executable = true;
   };
 
+  home.file.".local/bin/skill-tree-launcher" = {
+    source = ./files/skill-tree-launcher.sh;
+    executable = true;
+  };
+
   home.file.".local/bin/ambient-waybar" = {
     source = ./files/ambient-waybar.sh;
+    executable = true;
+  };
+
+  home.file.".local/bin/workspace-label" = {
+    source = ./files/workspace-label.sh;
+    executable = true;
+  };
+
+  home.file.".local/bin/workspace-label-set" = {
+    source = ./files/workspace-label-set.sh;
+    executable = true;
+  };
+
+  home.file.".local/bin/workspace-label-clear" = {
+    source = ./files/workspace-label-clear.sh;
     executable = true;
   };
 
@@ -56,6 +76,11 @@
 
   home.file.".local/bin/ambient-daemon" = {
     source = ./files/ambient-daemon.py;
+    executable = true;
+  };
+
+  home.file.".local/bin/claude-boot-reminder" = {
+    source = ./files/claude-boot-reminder.sh;
     executable = true;
   };
 
@@ -87,6 +112,34 @@
     categories = [ "AudioVideo" "Network" ];
   };
 
+  xdg.desktopEntries.magie-schmied-expo = {
+    name = "Magie-Schmied Expo";
+    genericName = "Expo Dev Server";
+    comment = "Startet den Expo-Dev-Server fuer Magie-Schmied in kitty";
+    exec = "kitty --directory /home/fuchs/projects/magie-schmied/mobile -e npx expo start";
+    icon = "utilities-terminal";
+    terminal = false;
+    categories = [ "Development" ];
+  };
+
+  # Bluetooth-Kopfhörer: AVRCP-Tasten (Play/Pause/Skip/Lautstärke am Touchpad)
+  # kommen über BlueZ an, ohne mpris-proxy landen sie bei keinem Player.
+  systemd.user.services.mpris-proxy = {
+    Unit = {
+      Description = "Bluetooth AVRCP <-> MPRIS Bridge (Kopfhörer-Touchsteuerung)";
+      After = [ "graphical-session.target" "bluetooth.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.bluez}/bin/mpris-proxy";
+      Restart = "always";
+      RestartSec = "1s";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
   systemd.user.services.ambient-daemon = {
     Unit = {
       Description = "Hyperion Ambient Light Daemon";
@@ -98,6 +151,28 @@
       Restart = "on-failure";
       RestartSec = "5s";
       Environment = "PATH=/run/current-system/sw/bin:/run/wrappers/bin:/home/fuchs/.local/bin";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  # War bisher von Hand unter ~/bin/ + ~/.config/systemd/user/ abgelegt (nicht
+  # Nix-verwaltet) -- P2-Aufraeumrunde (sojus-core Plan 06.09.2026): jetzt
+  # deklarativ wie alle anderen Skripte hier. Deaktiviert sich nach dem ersten
+  # Trigger selbst (s. Skript), WantedBy sorgt aber dafuer, dass ein Rebuild
+  # es nicht versehentlich wieder scharfschaltet -- das war auch beim alten,
+  # von Hand gepflegten Unit schon so gewollt (einmaliger Hinweis pro echtem
+  # Neustart-Zyklus, nicht pro Boot fuer immer).
+  systemd.user.services.claude-boot-reminder = {
+    Unit = {
+      Description = "Claude Boot-Reminder — einmaliger Status-Check nach dem Login";
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = "%h/.local/bin/claude-boot-reminder";
+      Environment = "DISPLAY=:0";
     };
     Install = {
       WantedBy = [ "graphical-session.target" ];

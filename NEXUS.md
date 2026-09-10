@@ -96,9 +96,9 @@ Bei `.nix`-Änderungen (neue Widget-Datei, neues Paket, neuer systemd-Service): 
 
 ## Was noch offen ist
 
-- **Vikunja-API-Token abgelaufen (401).** Tasks-Widget zeigt keine Daten. Neuen, langlebigen Token in Vikunja unter Settings → API Tokens erzeugen, in `credentials.env` eintragen (kein Neustart nötig).
-- **Skill Tree nicht konfiguriert.** `SKILLTREE_URL`/`SKILLTREE_LOCAL_CMD` sind leer.
-- **News-Hub-Webhooks fehlen.** Alle 4 Tabs (Tech/Anime/Gaming/NixOS) haben leere `NEWS_TAB_n_URL`.
-- **DP-3-Anbindung ist unzuverlässig.** Direkt beobachtet (2026-07-24): DP-3 kann physisch verbunden sein, ohne dass Waybar (und teils Quickshell) eine Surface dafür erzeugen — auch nach frischem Waybar-Neustart bei bestehender Verbindung. Wahrscheinlich eine wacklige Kabel-/Hotplug-Verbindung, kein Konfigurationsfehler (Hyprland-Workspace-Zuweisung 6–10 und Waybar-`persistent-workspaces` sind nachweislich korrekt, funktionieren auf DP-1 mit identischer Config einwandfrei). **Recovery:** `pkill waybar && hyprctl dispatch exec waybar` (und ggf. Dashboard/Sidebar-Neustart s.o.), sobald der Monitor wieder erkannt ist.
-- **`SUPER+S`-Screenshot-Bind hat vermutlich einen Leerzeichen-Bug:** `grim -g "$(slurp)"~/pictures/screenshot.png` — zwischen Geometrie und Zielpfad fehlt ein Leerzeichen. Nicht angefasst (außerhalb des aktuellen Auftrags), nur dokumentiert.
-- **Sojus-Agenten-Widget zeigt MCP-Server-Status statt Tasks/Jobs.** Sojus Core (`192.168.1.26:3001`) ist aktuell ein reines LLM-Gateway (`/health`, `/v1/models`, `/v1/chat/completions`) ohne Task-/Job-Endpoint — der ursprünglich angefragte Anzeige-Typ existiert serverseitig nicht.
+Offene Punkte werden seit 24.08.2026 nicht mehr hier gepflegt, sondern als
+Tasks im Vikunja-Projekt **"Nexus"** getrackt (Teil von IT → Eigene Hosts).
+Diese Datei bleibt die Architektur-/Ist-Zustand-Doku; Vikunja ist die
+Aufgabenliste dazu — auch für Sojus/Claude Code selbst gilt: bei
+Nexus-Desktop-Themen dort nachschauen statt eine eigene Liste hier zu
+führen.

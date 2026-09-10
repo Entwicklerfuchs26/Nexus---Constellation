@@ -5,7 +5,7 @@
   "fixed-center": true,
   "spacing": 4,
 
-  "modules-left": ["custom/power","custom/launcher","hyprland/workspaces"],
+  "modules-left": ["group/left-pill","custom/workspace-label"],
   "modules-center": ["clock"],
   "modules-right": ["custom/ambient","custom/controlcenter","pulseaudio","bluetooth","network","custom/theme-toggle","tray"],
 
@@ -30,12 +30,28 @@
     "on-click": "wofi --show drun"
   },
 
+  "group/left-pill": {
+    "orientation": "horizontal",
+    "modules": ["custom/power","custom/launcher","hyprland/workspaces"]
+  },
+
   "hyprland/workspaces": {
     "format": "●",
     "persistent-workspaces": {
       "DP-1": [1, 2, 3, 4, 5],
       "DP-3": [6, 7, 8, 9, 10]
   }
+  },
+
+  "custom/workspace-label": {
+    "format": "{}",
+    "return-type": "json",
+    "exec": "~/.local/bin/workspace-label",
+    "interval": 1,
+    "signal": 9,
+    "on-click": "~/.local/bin/workspace-label-set",
+    "on-click-right": "~/.local/bin/workspace-label-clear",
+    "tooltip": true
   },
 
   "clock": {
@@ -55,8 +71,8 @@
   "format-muted": "🔇",
   "on-click": "pwvucontrol",
   "on-click-right": "pavucontrol",
-  "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
-  "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+  "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
+  "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 },
 "bluetooth": {
   "format": "󰂯",

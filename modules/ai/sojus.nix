@@ -93,122 +93,15 @@ in {
     '';
   };
 
-  # ── Sudoers-Whitelist für sojus ───────────────────────────────────────────────
-  # Nur diese Befehle sind erlaubt – alles andere ist DENY by default.
-  # Explizit NICHT erlaubt (nicht gelistet): dd, mkfs, parted, userdel,
-  #   passwd (für andere User), rm -rf auf Systempfade, shutdown, poweroff.
-  security.sudo.extraRules = [
-    {
-      users = [ "sojus" ];
-      commands = [
-        # systemctl: nur restart/status für Sojus-relevante Services (mit und ohne Flags)
-        {
-          command = "/run/current-system/sw/bin/systemctl restart sojus-core";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl restart sojus-core *";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl status sojus-core";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl status sojus-core *";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl restart fuchs-shell";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl restart fuchs-shell *";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl status fuchs-shell";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl status fuchs-shell *";
-          options = [ "NOPASSWD" ];
-        }
-
-        # nixos-rebuild: nur build/build-vm/switch, mit optionalen Flags
-        {
-          command = "/run/current-system/sw/bin/nixos-rebuild build";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/nixos-rebuild build *";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/nixos-rebuild build-vm";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/nixos-rebuild build-vm *";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/nixos-rebuild switch";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/nixos-rebuild switch *";
-          options = [ "NOPASSWD" ];
-        }
-
-        # Wrapper-Skript (einziger empfohlener Rebuild-Einstiegspunkt)
-        {
-          command = "/home/sojus/bin/safe-rebuild.sh";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/home/sojus/bin/safe-rebuild.sh *";
-          options = [ "NOPASSWD" ];
-        }
-
-        # git als fuchs – wird vom safe-rebuild.sh intern via sudo -u fuchs genutzt
-        # (kein eigenständiges NOPASSWD für git, nur über safe-rebuild.sh)
-
-        # sandbox-nexus-Testcontainer (siehe sojus-core/nexus/sandbox-nexus-container.nix
-        # + fuchs-sandbox-control-nexus.nix) — Start/Stop/Status für fuchs-sandbox-control-nexus
-        {
-          command = "/run/current-system/sw/bin/systemctl start container@sandbox-nexus.service";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl stop container@sandbox-nexus.service";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl status container@sandbox-nexus.service";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl status container@sandbox-nexus.service --no-pager";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "/home/sojus/bin/sandbox-nexus-sync.sh";
-          options = [ "NOPASSWD" ];
-        }
-        # Deklarative Container werden vom Host-switch NICHT automatisch
-        # reprovisioniert, wenn sie zum Zeitpunkt des Switch nicht liefen —
-        # das persistente Container-Rootfs bleibt sonst auf dem
-        # allerersten Stand hängen (auf darwin26 live reproduziert, siehe
-        # darwin26/fuchs-safe-rebuild.nix). stop+rm+start reprovisioniert
-        # zuverlässig frisch aus der aktuellen Config; Testcontainer sind
-        # ohnehin Wegwerf-State (echte Daten liegen im bindMount, nicht im
-        # Container-Rootfs selbst).
-        {
-          command = "/run/current-system/sw/bin/rm -rf /var/lib/nixos-containers/sandbox-nexus";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-  ];
+  # ── Sudoers-Whitelist für sojus: ENTFERNT (2026-08-22) ────────────────────────
+  # Testphase "Sojus von vorne": sojus bekommt stattdessen echten SSH-Zugriff
+  # (siehe modules/ai/sojus-ssh-logging.nix) mit vollem Befehls-Logging statt
+  # Tier-Gating — aber bewusst OHNE jedes sudo, auch nicht die vorher eng
+  # gewhitelisteten Selbstverwaltungs-Befehle (nixos-rebuild, systemctl
+  # restart auf sich selbst, sandbox-nexus). Konsequenz: safe-rebuild.sh und
+  # fuchs-shells eigene Restart/Rebuild-Fähigkeit funktionieren für sojus
+  # nicht mehr — unkritisch, fuchs-shell.service ist im selben Zug ohnehin
+  # deaktiviert (siehe nexus/fuchs-shell.nix). Alte Regeln standen bis
+  # einschließlich Commit vor diesem hier in der Git-Historie, falls das
+  # später wieder gebraucht wird.
 }

@@ -58,6 +58,8 @@
     KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
     # Intel AX200 Bluetooth USB-Autosuspend deaktivieren (verhindert zufälliges Verschwinden)
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0029", ATTR{power/autosuspend}="-1"
+    # Generic USB3.0-CRW Kartenleser (Realtek) Autosuspend deaktivieren (verhindert Disconnect/Reconnect-Loop beim Kartenzugriff)
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="0306", ATTR{power/autosuspend}="-1"
   '';
 
   services.usbmuxd.enable = true;
@@ -67,7 +69,7 @@
   boot.supportedFilesystems = [ "ntfs" ];
   # Kernel-exFAT deaktiviert → fuse-exfat übernimmt (uid/gid funktioniert)
   boot.blacklistedKernelModules = [ "exfat" ];
-  environment.systemPackages = with pkgs; [ udisks2 exfat ];
+  environment.systemPackages = with pkgs; [ udisks2 exfat gnome-disk-utility ];
 
   environment.etc."udisks2/mount_options.conf".text = ''
     [defaults]
