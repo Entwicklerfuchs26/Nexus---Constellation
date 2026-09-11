@@ -1,0 +1,12 @@
+# Split-Tunnel-VPN: eine Domain pro Zeile, Zeilen mit # sind Kommentare.
+# Traffic zu diesen Domains läuft über ProtonVPN, alles andere normal.
+#
+# Diese Datei umbenennen zu "split-tunnel-domains.txt" (ohne .example) und
+# nach Bedarf editieren -- liegt in vpn-userdata/, ist komplett von Git
+# ausgenommen (.gitignore), kein Rebuild-Zwang für reine Änderungen hier,
+# aber ein "sudo nixos-rebuild switch" ist trotzdem nötig, damit dnsmasq
+# die neue Liste übernimmt (liest die Datei zur Build-Zeit ein, nicht live).
+#
+# Beispiele:
+# irgendeine-unsichere-seite.de
+# noch-eine-seite.com

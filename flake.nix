@@ -94,6 +94,7 @@
         ./modules/hardware/tablet.nix
         ./modules/core/printing.nix
         ./modules/core/sftp-yuki.nix
+        ./modules/core/split-tunnel-vpn.nix
         ./modules/software/software.nix
         ./modules/software/gaming.nix
         ./modules/software/docker.nix

@@ -3,3 +3,8 @@ secrets/
 *.key
 result
 .direnv
+
+# Split-Tunnel-VPN Nutzerdaten (Jonas editiert direkt, nie committen) --
+# .example-Dateien bleiben als Vorlage im Repo, alles andere in vpn-userdata/ nicht.
+vpn-userdata/*
+!vpn-userdata/*.example
