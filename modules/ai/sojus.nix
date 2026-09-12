@@ -77,8 +77,69 @@ in {
   };
 
   # ── ACL-Tools verfügbar halten ────────────────────────────────────────────────
-  # setfacl/getfacl für /home/fuchs ACL-Verwaltung (imperativ nach Rebuild)
+  # setfacl/getfacl für /home/fuchs ACL-Verwaltung
   environment.systemPackages = with pkgs; [ acl ];
+
+  # ── Breite Leserechte für sojus, deklarativ statt imperativ ──────────────────
+  # Jonas' Wunsch (zuletzt bestätigt 12.09.2026): sojus soll wirklich überall
+  # lesen können, nicht nur /etc/nixos + /home/fuchs -- Begründung: keine
+  # anderen echten User auf nexus, SSH-Keys sind passphrasengeschützt.
+  #
+  # Bisher wurde das IMPERATIV per einmaligem setfacl-Aufruf gesetzt (siehe
+  # Claude-Code-Memory feedback_acl_ssh_breakage) -- das hat zwei echte
+  # Probleme gezeigt: (1) überlebt keinen nixos-rebuild/Reboot zuverlässig
+  # (ACL bzw. deren Maske wurde mehrfach live zurückgesetzt vorgefunden),
+  # (2) ein zu breiter rekursiver Lauf hat einmal SSH/GPG/sssd/Samba
+  # kaputt gemacht (POSIX-ACL auf einer Datei macht aus OpenSSHs Sicht eine
+  # "UNPROTECTED PRIVATE KEY FILE", sssd/Samba interpretieren eine geerbte
+  # Default-ACL auf dem Parent-Verzeichnis als "Permissions zu offen").
+  #
+  # Deshalb hier als activationScript (läuft bei JEDEM nixos-rebuild
+  # switch erneut, überlebt also Reboots/Rebuilds automatisch) UND mit
+  # einer expliziten Ausschlussliste für alles, was beim letzten Vorfall
+  # nachweislich kaputtging -- kein blindes "setfacl -R /".
+  #
+  # NICHT abgedeckt (bewusst): /proc, /sys, /dev, /run (Pseudo-Dateisysteme,
+  # ACLs dort sinnlos/riskant), /nix/store (schon world-readable, keine
+  # ACL nötig, und rekursiv would nur Zeit kosten), /root (Root selbst,
+  # ist eine echte Rechtegrenze, keine reine Datenfrage).
+  #
+  # Bekannter Nachteil: das hier läuft bei JEDEM Rebuild neu und geht
+  # einmal über praktisch das gesamte Root-Dateisystem -- macht jeden
+  # künftigen nixos-rebuild switch auf nexus spürbar länger. Bewusster
+  # Trade-off für "wirklich überall", nicht übersehen.
+  system.activationScripts.sojusReadAccessEverywhere = {
+    deps = [ "users" ];
+    text = ''
+      ACL=${pkgs.acl}/bin/setfacl
+      FIND=${pkgs.findutils}/bin/find
+
+      for entry in /*; do
+        name=$(basename "$entry")
+        case "$name" in
+          proc|sys|dev|run|nix|lost+found|root) continue ;;
+        esac
+        [ -d "$entry" ] || continue
+
+        # rX: Lesen+Traversieren, aber keine Datei wird dadurch neu
+        # ausführbar gemacht, die es vorher nicht schon war.
+        $FIND "$entry" -xdev \( \
+            -path '*/.ssh' -o \
+            -path '*/.gnupg' -o \
+            -path '*/.config/kdeconnect' -o \
+            -path '*/.claude/daemon' -o \
+            -path '/var/lib/sssd' -o \
+            -path '/var/lib/samba/private' -o \
+            -iname '*.pem' -o \
+            -iname '*.key' -o \
+            -iname 'id_ed25519*' -o \
+            -iname 'id_rsa*' -o \
+            -iname 'id_ecdsa*' \
+          \) -prune -o -exec $ACL -m u:sojus:rX,d:u:sojus:rX {} + \
+          2>/dev/null || true
+      done
+    '';
+  };
 
   # ── safe-rebuild.sh deployen via Activation Script ───────────────────────────
   # Wird bei jedem nixos-rebuild switch aktuell gehalten.
