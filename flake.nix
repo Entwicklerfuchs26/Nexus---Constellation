@@ -94,7 +94,17 @@
         ./modules/hardware/tablet.nix
         ./modules/core/printing.nix
         ./modules/core/sftp-yuki.nix
-        ./modules/core/split-tunnel-vpn.nix
+        # ./modules/core/split-tunnel-vpn.nix
+        # Vorübergehend deaktiviert (12.09.2026): darwin26 hat systemweit
+        # pure-eval=true gesetzt, das blockiert builtins.pathExists/readFile
+        # für JEDEN Pfad außerhalb der Flake-Inputs -- das Modul liest
+        # vpn-userdata/* aber genau so beim Bauen, war deshalb nie wirklich
+        # aktiv (Bug live auf darwin26 entdeckt, nicht nexus-spezifisch,
+        # aber nexus dürfte dieselbe Einstellung/dasselbe Problem haben).
+        # Müsste auf Laufzeit-Lesen (systemd ConditionPathExists + Shell-
+        # Skripte statt Nix-Eval) umgebaut werden -- Jonas hat entschieden,
+        # das erstmal zurückzustellen statt jetzt umzubauen. Modul-Code
+        # bleibt unverändert liegen, nur der Import ist raus.
         ./modules/software/software.nix
         ./modules/software/gaming.nix
         ./modules/software/docker.nix
