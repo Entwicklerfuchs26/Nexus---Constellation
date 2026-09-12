@@ -32,7 +32,19 @@
 { config, pkgs, lib, ... }:
 
 let
-  userDataDir = ../../vpn-userdata;
+  # ACHTUNG: bewusst ein absoluter String-Pfad, KEIN Nix-Pfad-Literal
+  # (also nicht z.B. ../../vpn-userdata) -- ein Nix-Pfad-Literal wird
+  # relativ zur eigenen Position INNERHALB der Flake-Kopie im Store
+  # aufgeloest, und Nix kopiert beim Flake-Build nur git-getrackte
+  # Dateien (respektiert .gitignore) in diese Kopie. vpn-userdata/ ist
+  # aber genau deshalb gitignored, weil es NIE ins Repo/den Store soll --
+  # mit einem Pfad-Literal waere das Modul dadurch fuer immer "inaktiv"
+  # gewesen, egal was real auf der Platte liegt (Bug live auf darwin26
+  # entdeckt: identischer Store-Hash vor/nach dem Eintragen einer
+  # Domain). Ein absoluter String wird stattdessen als echter
+  # Dateisystem-Pfad zur Auswertungszeit gelesen, unabhaengig von der
+  # Flake-Kopie.
+  userDataDir = "/etc/nixos/nixos-config/vpn-userdata";
   domainsFile = "${userDataDir}/split-tunnel-domains.txt";
   protonConfFile = "${userDataDir}/protonvpn.conf";
 
