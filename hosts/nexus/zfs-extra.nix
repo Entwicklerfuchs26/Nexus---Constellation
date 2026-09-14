@@ -1,6 +1,6 @@
-# Zusatz-Modul NUR für den ZFS-Testinstall auf der 1TB-Platte
-# (nixosConfigurations.nexus-1tb-test in flake.nix). Die produktive
-# "nexus"-Config (ext4, 512GB) importiert das bewusst NICHT.
+# Zusatz-Modul für die aktive ZFS-Installation auf der 1TB-Platte
+# (nixosConfigurations.nexus). nexus-512-fallback (die alte ext4-Platte)
+# importiert das bewusst NICHT.
 { config, lib, pkgs, userHardware, ... }:
 
 {
@@ -12,14 +12,7 @@
   services.zfs.autoScrub.enable = true;
   services.zfs.trim.enable = true;
 
-  # Alte 512GB read-only mitmounten -- Übergangshilfe während des Umzugs
-  # (Zugriff auf .claude/Chatverlauf, .ssh, sojus-core etc. ohne die alte
-  # Platte anzufassen). Read-only zur Sicherheit: die 512GB bleibt der
-  # unberührte Fallback, egal was hier passiert. Kann nach Abschluss des
-  # Umzugs wieder raus.
-  fileSystems."/mnt/alte-platte" = {
-    device = "/dev/disk/by-id/ata-Samsung_SSD_860_PRO_512GB_S42YNX0N901164Y-part2";
-    fsType = "ext4";
-    options = [ "nofail" "ro" "x-systemd.automount" ];
-  };
+  # Die alte 512GB bewusst NICHT in fileSystems eintragen -- so bleibt sie
+  # für udisks/Nautilus ein ganz normales Wechsellaufwerk (Sidebar-Eintrag,
+  # ein Klick zum Mounten), statt als System-Mount fest eingebunden zu sein.
 }

@@ -368,7 +368,7 @@
     "user-data": {
       "flake": false,
       "locked": {
-        "lastModified": 1789384450,
+        "lastModified": 1789420155,
         "narHash": "sha256-xeFm1I0xwOEOf4pPMRxse/qYlpIMsZKMYNnO+HVDEZM=",
         "path": "/etc/nixos/user",
         "type": "path"
