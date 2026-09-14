@@ -145,22 +145,28 @@
     ];
   in
   {
+    # "nexus" = die aktuell aktive/primäre Maschine (seit 14.09.2026: die
+    # 1TB-ZFS-Platte). WICHTIG: dieser Name muss immer zur tatsächlich
+    # gebooteten Hardware passen, sonst baut/switcht man versehentlich auf
+    # die falsche Festplatten-Konfiguration (genau das ist am 14.09.2026
+    # passiert -- ein alter Klon ohne diese Umbenennung hat "nexus" auf die
+    # ext4-Config gebaut während real schon ZFS lief, Ergebnis: kaputte
+    # GUI/Treiber-Mismatch nach dem Switch).
     nixosConfigurations.nexus = nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
-      modules = [ ./hosts/nexus/hardware-configuration.nix ] ++ nexusCommonModules;
-    };
-
-    # Temporärer Testeintrag für den 1TB-ZFS-Umzug (Community-Install-Test,
-    # 14.09.2026) -- kann nach erfolgreichem Umzug entfernt oder in "nexus"
-    # umbenannt werden, sobald die 512GB-Platte endgültig abgelöst ist.
-    nixosConfigurations.nexus-1tb-test = nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
       modules = [
         ./hosts/nexus/hardware-configuration-1tb.nix
         ./hosts/nexus/zfs-extra.nix
       ] ++ nexusCommonModules;
+    };
+
+    # Alte 512GB-ext4-Installation -- bleibt als Fallback erhalten, ist aber
+    # NICHT mehr "nexus". Explizit anwählen: --flake ...#nexus-512-fallback
+    nixosConfigurations.nexus-512-fallback = nixpkgs.lib.nixosSystem {
+      inherit system;
+      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
+      modules = [ ./hosts/nexus/hardware-configuration.nix ] ++ nexusCommonModules;
     };
 
     nixosConfigurations.nous = nixpkgs.lib.nixosSystem {
