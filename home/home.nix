@@ -12,6 +12,7 @@
       ./waybar.nix
       ./kitty.nix
       ./matugen.nix
+      ./skwd-wall.nix
       ./desktop.nix
       ./rofi.nix
       ./mimeapps.nix
