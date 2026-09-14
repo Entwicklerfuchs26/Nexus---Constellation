@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, userConfig, ... }:
 {
   home.file.".config/eww/eww.yuck" = { source = ./files/eww/eww.yuck; force = true; };
   home.file.".config/eww/scripts/net-rx.sh" = {
@@ -14,13 +14,17 @@
     executable = true;
   };
 
+  # .text statt .source: enthält den persönlichen ntfy.sh-Kanalnamen, per
+  # replaceStrings generisch gemacht.
   home.file.".local/bin/AniDL" = {
-    source = ./files/anidl.sh;
+    text = builtins.replaceStrings [ "ntfy.sh/Nexus-NixOS_fuchs" ] [ "ntfy.sh/${userConfig.ntfyChannel}" ]
+      (builtins.readFile ./files/anidl.sh);
     executable = true;
   };
 
   home.file.".local/bin/DL" = {
-    source = ./files/dl.sh;
+    text = builtins.replaceStrings [ "ntfy.sh/Nexus-NixOS_fuchs" ] [ "ntfy.sh/${userConfig.ntfyChannel}" ]
+      (builtins.readFile ./files/dl.sh);
     executable = true;
   };
 
@@ -112,11 +116,13 @@
     categories = [ "AudioVideo" "Network" ];
   };
 
+  # Persönlicher App-Shortcut für ein eigenes Projekt -- für andere Nutzer
+  # ohne Bedeutung, Pfad anpassen oder diesen Eintrag einfach löschen.
   xdg.desktopEntries.magie-schmied-expo = {
     name = "Magie-Schmied Expo";
     genericName = "Expo Dev Server";
     comment = "Startet den Expo-Dev-Server fuer Magie-Schmied in kitty";
-    exec = "kitty --directory /home/fuchs/projects/magie-schmied/mobile -e npx expo start";
+    exec = "kitty --directory ${config.home.homeDirectory}/projects/magie-schmied/mobile -e npx expo start";
     icon = "utilities-terminal";
     terminal = false;
     categories = [ "Development" ];
@@ -150,7 +156,7 @@
       ExecStart = "%h/.local/bin/ambient-daemon";
       Restart = "on-failure";
       RestartSec = "5s";
-      Environment = "PATH=/run/current-system/sw/bin:/run/wrappers/bin:/home/fuchs/.local/bin";
+      Environment = "PATH=/run/current-system/sw/bin:/run/wrappers/bin:%h/.local/bin";
     };
     Install = {
       WantedBy = [ "graphical-session.target" ];

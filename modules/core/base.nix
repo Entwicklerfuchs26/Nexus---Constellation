@@ -60,6 +60,12 @@
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0029", ATTR{power/autosuspend}="-1"
     # Generic USB3.0-CRW Kartenleser (Realtek) Autosuspend deaktivieren (verhindert Disconnect/Reconnect-Loop beim Kartenzugriff)
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="0306", ATTR{power/autosuspend}="-1"
+    # Hanvon-Zeichentablett und Logitech-USB-Empfänger werden vom Kernel fälschlich zusätzlich
+    # als Joystick erkannt. Das macht die automatische Controller-Erkennung in Minecraft-Mods
+    # (z.B. Create: Tweaked Controllers) mehrdeutig, wenn ein echter Joystick (TX16S) angeschlossen ist.
+    ATTRS{idVendor}=="28bd", ATTRS{idProduct}=="0202", ENV{ID_INPUT_JOYSTICK}=""
+    ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c541", ENV{ID_INPUT_JOYSTICK}=""
+    ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c08b", ENV{ID_INPUT_JOYSTICK}=""
   '';
 
   services.usbmuxd.enable = true;

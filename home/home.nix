@@ -1,8 +1,8 @@
-{ config, pkgs, aniworld-dl-src, aniworld-gui-src, ... }:
+{ config, pkgs, aniworld-dl-src, aniworld-gui-src, userConfig, ... }:
 {
-  home-manager.users.fuchs = {
-    home.username = "fuchs";
-    home.homeDirectory = "/home/fuchs";
+  home-manager.users.${userConfig.username} = {
+    home.username = userConfig.username;
+    home.homeDirectory = "/home/${userConfig.username}";
     home.stateVersion = "25.11";
     home.sessionVariables = {
       PATH = "$HOME/.local/bin:$PATH";
@@ -38,13 +38,19 @@
     ];
     programs.git = {
       enable = true;
-       settings.user.name = "Entwicklerfuchs26";
-       settings.user.email = "jonas@hofpause.info";
+       settings.user.name = userConfig.gitAuthorName;
+       settings.user.email = userConfig.gitAuthorEmail;
     };
     programs.bash = {
       enable = true;
       shellAliases = {
-        rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/nixos-config#nexus";
+        # --update-input user-data/sojus-core zwingend: beides sind lokale
+        # path:-Flake-Inputs außerhalb des Repos, die unter pure-eval NICHT
+        # automatisch neu eingelesen werden -- ohne das Flag baut nixos-
+        # rebuild klaglos mit stundenaltem, unsichtbar veraltetem Stand
+        # (live entdeckt 14.09.2026, gleiches Muster wie das bekannte
+        # sojus-core-Problem auf darwin26).
+        rebuild = "nix flake update --flake /etc/nixos/nixos-config user-data sojus-core && sudo nixos-rebuild switch --flake /etc/nixos/nixos-config#nexus";
         update = "sudo nix flake update /etc/nixos";
         config = "cd /etc/nixos";
         ssh = "TERM=xterm-256color ssh -t";

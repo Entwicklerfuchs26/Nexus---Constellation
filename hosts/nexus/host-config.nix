@@ -1,16 +1,27 @@
-# Host-spezifische Konfiguration – NICHT ins public repo committen ohne Bereinigung
-# (Hostname, MACs, UUIDs, interne Domains, Zertifikatspfade)
-{ config, pkgs, ... }:
+# Host-Konfiguration für nexus. Alle persönlichen/maschinenspezifischen
+# Werte kommen aus userConfig/userHardware (siehe /etc/nixos/user/,
+# eingebunden als Flake-Input "user-data" in flake.nix) -- diese Datei
+# selbst ist community-tauglich und kann committet werden.
+{ config, lib, pkgs, userConfig, userHardware, ... }:
 
 {
-  networking.hostName = "nexus";
+  networking.hostName = userConfig.hostName;
 
-  networking.interfaces.enp5s0 = {
+  # ZFS-Kernelmodul verfügbar machen (für den 1TB-Umzug -- braucht das
+  # Modul auf dem LAUFENDEN System, nicht nur im Zielsystem, sonst schlägt
+  # `zpool create` mit "ZFS modules cannot be auto-loaded" fehl, siehe
+  # INSTALL.md/Vikunja #ZFS-Umzug 14.09.2026). Harmlos additiv, root bleibt
+  # ext4 -- kann drinbleiben.
+  boot.supportedFilesystems = [ "zfs" ];
+  boot.zfs.forceImportRoot = false;
+  networking.hostId = userHardware.zfsHostId;
+
+  networking.interfaces.${userHardware.networkInterface} = {
     wakeOnLan.enable = true;
   };
 
   security.sudo.extraRules = [{
-    users = [ "fuchs" ];
+    users = [ userConfig.username ];
     commands = [
       {
         command = "/run/current-system/sw/bin/shutdown";
@@ -34,37 +45,39 @@
   # Sternenhof Root-CA – Pfad muss auf lokale certs/ im Config-Repo zeigen
   security.pki.certificateFiles = [ ../../certs/sternenhof-ca-2026.crt ];
 
-  networking.hosts = {
-    "192.168.1.26" = [
-      "cloud.sternenhof.space"
-      "n8n.sternenhof.space"
-      "media.sternenhof.space"
-      "photos.sternenhof.space"
-      "tasks.sternenhof.space"
-      "home.sternenhof.space"
-      "ntfy.sternenhof.space"
-      "zugang.sternenhof.space"
-      "darwin26.sternenhof.space"
-      "sojus.sternenhof.space"
-      "comfyui.sternenhof.space"
+  networking.hosts = lib.optionalAttrs (userConfig.baseDomain != "") {
+    "${userConfig.homeserverIp}" = map (sub: "${sub}.${userConfig.baseDomain}") [
+      "cloud"
+      "n8n"
+      "media"
+      "photos"
+      "tasks"
+      "home"
+      "ntfy"
+      "zugang"
+      "darwin26"
+      "sojus"
+      "comfyui"
     ];
   };
 
-  # Bose Bluetooth-Headset: A2DP-Profil erzwingen
-  services.pipewire.wireplumber.extraConfig."51-bluez-bose-a2dp" = {
-    "monitor.bluez.rules" = [
-      {
-        matches = [
-          { "device.name" = "bluez_card.7C_96_D2_77_56_7E"; }
-        ];
-        actions = {
-          update-props = {
-            "bluez5.auto-connect" = [ "a2dp_sink" ];
-            "device.profile" = "a2dp-sink";
+  # Bluetooth-Headset: A2DP-Profil erzwingen (nur falls konfiguriert)
+  services.pipewire.wireplumber.extraConfig = lib.optionalAttrs (userHardware.bluetooth ? boseHeadsetMac) {
+    "51-bluez-headset-a2dp" = {
+      "monitor.bluez.rules" = [
+        {
+          matches = [
+            { "device.name" = "bluez_card.${userHardware.bluetooth.boseHeadsetMac}"; }
+          ];
+          actions = {
+            update-props = {
+              "bluez5.auto-connect" = [ "a2dp_sink" ];
+              "device.profile" = "a2dp-sink";
+            };
           };
-        };
-      }
-    ];
+        }
+      ];
+    };
   };
 
   # 1 TB Datenfestplatte (ext4)
@@ -73,8 +86,8 @@
   # (sie versucht /mnt komplett zu binden und stolpert dabei ueber den
   # haengenden Mountpoint). Bei angeschlossener Platte manuell mounten:
   # sudo mount /mnt/data
-  fileSystems."/mnt/data" = {
-    device = "/dev/disk/by-uuid/299df179-7040-42b8-a6f0-548247cc82f6";
+  fileSystems."/mnt/data" = lib.mkIf (userHardware.disks ? dataUuid) {
+    device = "/dev/disk/by-uuid/${userHardware.disks.dataUuid}";
     fsType = "ext4";
     options = [ "defaults" "nofail" "noauto" ];
   };
@@ -82,17 +95,17 @@
   networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 ];
 
   # SSSD LDAP-Konfiguration (aus modules/core/ldap.nix ausgelagert)
-  services.sssd.config = ''
+  services.sssd.config = lib.mkIf userConfig.ldap.enable ''
     [sssd]
-    domains = sternenhof.space
+    domains = ${userConfig.ldap.domain}
     services = nss, pam
 
-    [domain/sternenhof.space]
+    [domain/${userConfig.ldap.domain}]
     id_provider = ldap
     auth_provider = ldap
-    ldap_uri = ldap://darwin26.sternenhof.space:389
-    ldap_search_base = ou=users,dc=sternenhof,dc=space
-    ldap_bind_dn = cn=admin,dc=sternenhof,dc=space
+    ldap_uri = ${userConfig.ldap.uri}
+    ldap_search_base = ${userConfig.ldap.searchBase}
+    ldap_bind_dn = ${userConfig.ldap.bindDn}
     ldap_bind_authtok_type = password
     ldap_user_object_class = inetOrgPerson
     ldap_user_name = uid
@@ -101,32 +114,32 @@
   '';
 
   # Spielefestplatte (aus modules/software/gaming.nix ausgelagert)
-  fileSystems."/mnt/games" = {
-    device = "/dev/disk/by-uuid/5abc4798-aa86-48c6-bf31-64206749f67d";
+  fileSystems."/mnt/games" = lib.mkIf (userHardware.disks ? gamesUuid) {
+    device = "/dev/disk/by-uuid/${userHardware.disks.gamesUuid}";
     fsType = "ext4";
     options = [ "defaults" "nofail" "noauto" "x-systemd.automount" "x-systemd.device-timeout=5" ];
   };
 
   # Samba-Freigabe für Netzwerk-Scan (Epson "Scan to Folder"): Drucker legt
-  # gescannte Dateien direkt in ~fuchs/Documents ab. Zugang nur für fuchs,
-  # Passwort separat per `sudo smbpasswd -a fuchs` setzen (nicht das Login-PW).
+  # gescannte Dateien direkt in ~/Documents ab. Passwort separat per
+  # `sudo smbpasswd -a <username>` setzen (nicht das Login-PW).
   services.samba = {
     enable = true;
     openFirewall = true;
     settings = {
       global = {
         "workgroup" = "WORKGROUP";
-        "server string" = "nexus";
-        "netbios name" = "nexus";
+        "server string" = userConfig.hostName;
+        "netbios name" = userConfig.hostName;
         "security" = "user";
         "map to guest" = "never";
       };
       scans = {
-        "path" = "/home/fuchs/Documents";
+        "path" = "/home/${userConfig.username}/Documents";
         "browseable" = "yes";
         "read only" = "no";
         "guest ok" = "no";
-        "valid users" = "fuchs";
+        "valid users" = userConfig.username;
         "create mask" = "0664";
         "directory mask" = "0775";
       };
@@ -135,9 +148,9 @@
 
   # Hauptbenutzer (aus modules/core/users.nix ausgelagert)
   # docker-Gruppe: aus modules/software/docker.nix zusammengeführt
-  users.users.fuchs = {
+  users.users.${userConfig.username} = {
     isNormalUser = true;
-    description = "Entwicklerfuchs";
+    description = userConfig.fullName;
     extraGroups = [
       "wheel"
       "networkmanager"

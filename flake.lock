@@ -272,7 +272,8 @@
         "quickshell": "quickshell",
         "skwd-daemon": "skwd-daemon",
         "skwd-wall": "skwd-wall",
-        "sojus-core": "sojus-core"
+        "sojus-core": "sojus-core",
+        "user-data": "user-data"
       }
     },
     "rust-overlay": {
@@ -339,8 +340,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1789147160,
-        "narHash": "sha256-aCsKPZ1et1OXKy7uNmSjAMXBRCsUgMEqpZegFBVXFp8=",
+        "lastModified": 1789383734,
+        "narHash": "sha256-IQk+zcStAy8n/lGh27akwjjd5JHjmpSQIGwbV5g+SYk=",
         "path": "/home/fuchs/sojus-core",
         "type": "path"
       },
@@ -362,6 +363,19 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "user-data": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789384450,
+        "narHash": "sha256-xeFm1I0xwOEOf4pPMRxse/qYlpIMsZKMYNnO+HVDEZM=",
+        "path": "/etc/nixos/user",
+        "type": "path"
+      },
+      "original": {
+        "path": "/etc/nixos/user",
+        "type": "path"
       }
     }
   },

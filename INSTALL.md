@@ -11,25 +11,37 @@ Dieses Repo ist die NixOS-Flake-Konfiguration "Nexus Constellation" — ein modu
 
 1. Repo klonen:
    ```bash
-   git clone https://github.com/Entwicklerfuchs26/Nexus---Constellation ~/nixos-config
+   git clone https://github.com/Entwicklerfuchs26/Nexus---Constellation /etc/nixos/nixos-config
    ```
-2. Eigene Hardware-Config generieren:
+2. **Persönliche Werte anlegen** — liegen bewusst außerhalb des Repos unter
+   `/etc/nixos/user/`, damit sie nie versehentlich committet werden:
+   ```bash
+   mkdir -p /etc/nixos/user
+   cp /etc/nixos/nixos-config/user/config.example.nix   /etc/nixos/user/config.nix
+   cp /etc/nixos/nixos-config/user/hardware.example.nix /etc/nixos/user/hardware.nix
+   ```
+   Beide Dateien öffnen und ausfüllen (Username, Name, E-Mail, Hostname,
+   ggf. Domain/LDAP/SFTP/Hardware-Werte — Kommentare in den Dateien erklären
+   jedes Feld). Ohne diese zwei Dateien schlägt der Build mit einer klaren
+   Fehlermeldung fehl, die genau hierher zurückverweist.
+3. Eigene Hardware-Config generieren:
    ```bash
    nixos-generate-config
    ```
-3. Neuen Host anlegen (Vorlage kopieren):
+4. Neuen Host anlegen (Vorlage kopieren):
    ```bash
-   cp -r ~/nixos-config/hosts/example ~/nixos-config/hosts/MEINPC
+   cp -r /etc/nixos/nixos-config/hosts/example /etc/nixos/nixos-config/hosts/MEINPC
    ```
-4. `host-config.nix` im neuen Host-Ordner anpassen (Hostname, Username, IPs etc.) und die generierte `hardware-configuration.nix` einfügen.
-5. In `flake.nix` den neuen Host eintragen.
-6. Rebuild:
+   `hostName` in `/etc/nixos/user/config.nix` muss zu `MEINPC` passen.
+5. Generierte `hardware-configuration.nix` in `hosts/MEINPC/` einfügen, `host-config.nix` bei Bedarf an die eigene Hardware anpassen (Kommentare im Beispiel erklären was optional ist).
+6. In `flake.nix` den neuen Host eintragen (Kopie des `nexus`-Blocks unter `nixosConfigurations`, Pfade auf `hosts/MEINPC` anpassen).
+7. Rebuild:
    ```bash
-   sudo nixos-rebuild switch --flake ~/nixos-config#MEINPC
+   sudo nixos-rebuild switch --flake /etc/nixos/nixos-config#MEINPC
    ```
-7. Dotfiles installieren:
+8. Restliche Dotfiles installieren (skwd-wall/matugen-Skripte, die noch nicht deklarativ über Home-Manager laufen):
    ```bash
-   bash ~/nixos-config/dotfiles/install.sh
+   bash /etc/nixos/nixos-config/dotfiles/install.sh
    ```
 
 ## Module
@@ -38,4 +50,5 @@ Eine Übersicht aller Module gibt es in [`ai/MODULES.md`](ai/MODULES.md).
 
 ## Hinweis
 
-`secrets/` ist nicht im Repo enthalten (siehe `.gitignore`) und muss selbst angelegt werden.
+- `secrets/` ist nicht im Repo enthalten (siehe `.gitignore`) und muss selbst angelegt werden.
+- `/etc/nixos/user/` (echte persönliche Werte) ist ebenfalls nicht im Repo enthalten — siehe Schritt 2.

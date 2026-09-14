@@ -26,7 +26,7 @@
       Restart = "on-failure";
       RestartSec = "5s";
       Environment = [
-        "PATH=/run/current-system/sw/bin:/run/wrappers/bin:/home/fuchs/.local/bin"
+        "PATH=/run/current-system/sw/bin:/run/wrappers/bin:%h/.local/bin"
         "QS_STATE_FOCUSTIME=%h/.local/state/focustime"
         "QS_RUN_FOCUSTIME=/tmp/focustime"
       ];

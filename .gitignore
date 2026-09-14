@@ -8,3 +8,12 @@ result
 # .example-Dateien bleiben als Vorlage im Repo, alles andere in vpn-userdata/ nicht.
 vpn-userdata/*
 !vpn-userdata/*.example
+
+# Persönliche/maschinenspezifische Werte (Config-Trennung 14.09.2026) --
+# echte Werte liegen bewusst AUSSERHALB des Repos unter /etc/nixos/user/
+# (gleiches Muster wie custom-fonts/aniworld-dl-src, siehe flake.nix --
+# sonst greift pure-eval und der Flake-Build sieht die Datei nicht, siehe
+# Split-Tunnel-VPN-Incident). Diese Zeilen sind nur eine Sicherheitsnetz,
+# falls doch mal jemand eine echte config.nix/hardware.nix hier reinlegt.
+user/*
+!user/*.example.nix

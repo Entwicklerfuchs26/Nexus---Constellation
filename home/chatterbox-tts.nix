@@ -30,7 +30,9 @@ let
     # Referenzstimme einmalig aus der alten devnen/Chatterbox-TTS-Server-
     # Config übernehmen (nur lesen/kopieren, NICHT die alte Checkout
     # anfassen — dort liegen uncommittete, ungesicherte Änderungen).
-    SRC_VOICE="/home/fuchs/Chatterbox-TTS-Server/reference_audio/gojo_de_normal.wav"
+    # Persönlicher Pfad/Stimme -- für andere Nutzer ohne Bedeutung, der
+    # Code fällt unten sauber auf eine Warnung zurück falls die Datei fehlt.
+    SRC_VOICE="$HOME/Chatterbox-TTS-Server/reference_audio/gojo_de_normal.wav"
     DST_VOICE="$VOICES_DIR/default.wav"
     if [ ! -f "$DST_VOICE" ]; then
       if [ -f "$SRC_VOICE" ]; then

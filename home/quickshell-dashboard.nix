@@ -12,7 +12,11 @@
   home.file.".config/quickshell/nexus-dashboard/shell.qml".source = ./files/quickshell-dashboard/shell.qml;
   home.file.".config/quickshell/nexus-dashboard/Dashboard.qml".source = ./files/quickshell-dashboard/Dashboard.qml;
   home.file.".config/quickshell/nexus-dashboard/DashboardCard.qml".source = ./files/quickshell-dashboard/DashboardCard.qml;
-  home.file.".config/quickshell/nexus-dashboard/CredentialsLoader.qml".source = ./files/quickshell-dashboard/CredentialsLoader.qml;
+  # .text statt .source: enthält einen absoluten /home/fuchs-Pfad, per
+  # replaceStrings generisch für den tatsächlichen Home-Ordner gemacht.
+  home.file.".config/quickshell/nexus-dashboard/CredentialsLoader.qml".text =
+    builtins.replaceStrings [ "/home/fuchs" ] [ config.home.homeDirectory ]
+      (builtins.readFile ./files/quickshell-dashboard/CredentialsLoader.qml);
   home.file.".config/quickshell/nexus-dashboard/CalendarWidget.qml".source = ./files/quickshell-dashboard/CalendarWidget.qml;
   home.file.".config/quickshell/nexus-dashboard/VikunjaTasksWidget.qml".source = ./files/quickshell-dashboard/VikunjaTasksWidget.qml;
   home.file.".config/quickshell/nexus-dashboard/VikunjaTaskRow.qml".source = ./files/quickshell-dashboard/VikunjaTaskRow.qml;

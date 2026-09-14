@@ -1,6 +1,10 @@
 { config, pkgs, ... }:
 {
-  home.file.".config/matugen/config.toml".source = ./files/matugen-config.toml;
+  # .text statt .source: config.toml enthält absolute /home/fuchs-Pfade,
+  # per replaceStrings generisch für den tatsächlichen Home-Ordner gemacht.
+  home.file.".config/matugen/config.toml".text =
+    builtins.replaceStrings [ "/home/fuchs" ] [ config.home.homeDirectory ]
+      (builtins.readFile ./files/matugen-config.toml);
   home.file.".config/matugen/colors.sh.templ".source = ./files/matugen-colors.sh.templ;
   home.file.".config/matugen/hyprlock.conf.templ".source = ./files/hyprlock.conf.templ;
   home.file.".config/matugen/kdeglobals.templ".source = ./files/kdeglobals.templ;

@@ -95,10 +95,10 @@
 "custom/theme-toggle": {
   "format": "{}",
   "return-type": "json",
-  "exec": "mode=$(cat /home/fuchs/.cache/sojus/colorscheme 2>/dev/null || echo dark); if [ \"$mode\" = \"light\" ]; then echo '{\"text\":\"☀️\",\"class\":\"light\",\"tooltip\":\"Light Mode\"}'; else echo '{\"text\":\"🌙\",\"class\":\"dark\",\"tooltip\":\"Dark Mode\"}'; fi",
+  "exec": "mode=$(cat \"$HOME/.cache/sojus/colorscheme\" 2>/dev/null || echo dark); if [ \"$mode\" = \"light\" ]; then echo '{\"text\":\"☀️\",\"class\":\"light\",\"tooltip\":\"Light Mode\"}'; else echo '{\"text\":\"🌙\",\"class\":\"dark\",\"tooltip\":\"Dark Mode\"}'; fi",
   "interval": 30,
   "signal": 8,
-  "on-click": "setsid -f /home/fuchs/.config/skwd-wall/scripts/toggle-theme.sh",
+  "on-click": "setsid -f \"$HOME/.config/skwd-wall/scripts/toggle-theme.sh\"",
   "tooltip": true
 },
 

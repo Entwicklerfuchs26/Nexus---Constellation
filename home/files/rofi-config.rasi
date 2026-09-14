@@ -4,5 +4,5 @@ configuration {
     drun-display-format: "{name}";
 }
 
-@theme "/home/fuchs/.config/rofi/theme.rasi"
+@theme "~/.config/rofi/theme.rasi"
 

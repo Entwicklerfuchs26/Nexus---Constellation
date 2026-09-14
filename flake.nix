@@ -40,6 +40,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Persönliche/maschinenspezifische Werte (Username, Domains, Hardware-
+    # IDs) -- bewusst außerhalb des Git-Repos unter /etc/nixos/user/, aus
+    # demselben Grund wie custom-fonts/aniworld-dl-src: pure-eval liest nur
+    # git-getrackte Dateien, ein gitignorter Unterordner IM Repo wäre für
+    # den Flake-Build unsichtbar (siehe user/config.example.nix, INSTALL.md).
+    user-data = {
+      url = "path:/etc/nixos/user";
+      flake = false;
+    };
+
     # Persönliche Font-Sammlung, bewusst außerhalb des Git-Repos (teils
     # kommerzielle Fonts, dürfen nicht ins öffentliche GitHub-Repo).
     custom-fonts = {
@@ -65,22 +75,36 @@
     # ki-modules.url = "github:Entwicklerfuchs26/ki-modules";
   };
 
-  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, custom-fonts, aniworld-dl-src, aniworld-gui-src, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, custom-fonts, aniworld-dl-src, aniworld-gui-src, user-data, ... }@inputs:
   let
     system = "x86_64-linux";
+
+    # Persönliche Werte laufen als eigener Flake-Input rein (siehe oben),
+    # damit pure-eval sie trotz gitignore lesen kann. Fehlt user-data (z.B.
+    # frischer Klon ohne ausgefülltes /etc/nixos/user/), soll der Fehler
+    # klar auf INSTALL.md verweisen statt kryptisch "file not found".
+    userConfig =
+      if builtins.pathExists (user-data + "/config.nix")
+      then import (user-data + "/config.nix")
+      else throw "user/config.nix fehlt -- siehe user/config.example.nix und INSTALL.md (cp nach /etc/nixos/user/config.nix)";
+    userHardware =
+      if builtins.pathExists (user-data + "/hardware.nix")
+      then import (user-data + "/hardware.nix")
+      else throw "user/hardware.nix fehlt -- siehe user/hardware.example.nix und INSTALL.md (cp nach /etc/nixos/user/hardware.nix)";
   in
-  {
-    nixosConfigurations.nexus = nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src; };
-      modules = [
-        ./hosts/nexus/hardware-configuration.nix
+  let
+    # Geteilt zwischen der produktiven "nexus"-Config (512GB, ext4) und dem
+    # temporären ZFS-Testinstall "nexus-1tb-test" auf der neuen 1TB-Platte
+    # (Config-Trennung/Community-Install-Test, 14.09.2026) -- nur die
+    # Hardware-Konfiguration + ggf. zfs-extra.nix unterscheiden sich.
+    nexusCommonModules = [
         ./hosts/nexus/host-config.nix
 
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit userConfig userHardware; };
         }
 
         skwd-wall.nixosModules.default
@@ -118,7 +142,25 @@
         ./modules/core/ldap.nix
         ./modules/software/affinity.nix
         ./home/home.nix
-      ];
+    ];
+  in
+  {
+    nixosConfigurations.nexus = nixpkgs.lib.nixosSystem {
+      inherit system;
+      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
+      modules = [ ./hosts/nexus/hardware-configuration.nix ] ++ nexusCommonModules;
+    };
+
+    # Temporärer Testeintrag für den 1TB-ZFS-Umzug (Community-Install-Test,
+    # 14.09.2026) -- kann nach erfolgreichem Umzug entfernt oder in "nexus"
+    # umbenannt werden, sobald die 512GB-Platte endgültig abgelöst ist.
+    nixosConfigurations.nexus-1tb-test = nixpkgs.lib.nixosSystem {
+      inherit system;
+      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
+      modules = [
+        ./hosts/nexus/hardware-configuration-1tb.nix
+        ./hosts/nexus/zfs-extra.nix
+      ] ++ nexusCommonModules;
     };
 
     nixosConfigurations.nous = nixpkgs.lib.nixosSystem {
