@@ -13,6 +13,7 @@
       ./kitty.nix
       ./matugen.nix
       ./skwd-wall.nix
+      ./nautilus.nix
       ./desktop.nix
       ./rofi.nix
       ./mimeapps.nix
