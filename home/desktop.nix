@@ -1,18 +1,11 @@
 { config, pkgs, userConfig, ... }:
 {
+  # Auslastungs-Widget (eww "sysmon": CPU/RAM/GPU/VRAM/Netzwerk) am
+  # 16.09.2026 endgültig entfernt -- war ein permanentes Desktop-Overlay,
+  # nicht mehr gewünscht. eww.yuck/eww.scss.templ entsprechend bereinigt,
+  # die drei Helper-Skripte (cpu.sh/net-rx.sh/net-tx.sh) hatten keinen
+  # anderen Verwender und wurden gelöscht.
   home.file.".config/eww/eww.yuck" = { source = ./files/eww/eww.yuck; force = true; };
-  home.file.".config/eww/scripts/net-rx.sh" = {
-    source = ./files/eww/scripts/net-rx.sh;
-    executable = true;
-  };
-  home.file.".config/eww/scripts/net-tx.sh" = {
-    source = ./files/eww/scripts/net-tx.sh;
-    executable = true;
-  };
-  home.file.".config/eww/scripts/cpu.sh" = {
-    source = ./files/eww/scripts/cpu.sh;
-    executable = true;
-  };
 
   # .text statt .source: enthält den persönlichen ntfy.sh-Kanalnamen, per
   # replaceStrings generisch gemacht.
