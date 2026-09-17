@@ -26,6 +26,15 @@
 
   zramSwap.enable = true;
 
+  # ZFS für die per Thunderbolt angeschlossene OWC ThunderBay 4 (4x4TB,
+  # RAIDZ2) -- Immich/Jellyfin/Nextcloud-Datenspeicher, wird später zu
+  # darwin26 umgesteckt (Pool ist portabel: zpool export/import).
+  boot.supportedFilesystems = [ "zfs" ];
+  boot.zfs.forceImportRoot = false;
+  networking.hostId = "aee78328";
+  services.zfs.autoScrub.enable = true;
+  services.zfs.trim.enable = true;
+
   users.users.fuchs = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" ];
