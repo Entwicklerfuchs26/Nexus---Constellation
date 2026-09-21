@@ -158,6 +158,7 @@
       modules = [
         ./hosts/nexus/hardware-configuration-1tb.nix
         ./hosts/nexus/zfs-extra.nix
+        ./hosts/nexus/zfs-snapshot.nix
       ] ++ nexusCommonModules;
     };
 
