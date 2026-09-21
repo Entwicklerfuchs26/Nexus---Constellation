@@ -99,6 +99,13 @@ in {
   # einer expliziten Ausschlussliste für alles, was beim letzten Vorfall
   # nachweislich kaputtging -- kein blindes "setfacl -R /".
   #
+  # Nachtrag 21.09.2026: /etc/ssh fehlte in der Ausschlussliste -- die
+  # Host-Keys heißen ssh_host_ed25519_key/ssh_host_rsa_key, matchen also
+  # weder */.ssh noch *.key/id_ed25519*. Genau dieser Bug hat sshd beim
+  # nexus-Rebuild vom 21.09. erneut lahmgelegt (identisches Symptom wie im
+  # Vorfall oben, nur an einer anderen Stelle) -- /etc/ssh jetzt komplett
+  # ausgenommen wie /var/lib/sssd.
+  #
   # NICHT abgedeckt (bewusst): /proc, /sys, /dev, /run (Pseudo-Dateisysteme,
   # ACLs dort sinnlos/riskant), /nix/store (schon world-readable, keine
   # ACL nötig, und rekursiv would nur Zeit kosten), /root (Root selbst,
@@ -125,6 +132,7 @@ in {
         # ausführbar gemacht, die es vorher nicht schon war.
         $FIND "$entry" -xdev \( \
             -path '*/.ssh' -o \
+            -path '/etc/ssh' -o \
             -path '*/.gnupg' -o \
             -path '*/.config/kdeconnect' -o \
             -path '*/.claude/daemon' -o \
