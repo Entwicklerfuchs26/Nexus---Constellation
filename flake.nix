@@ -169,18 +169,5 @@
       specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
       modules = [ ./hosts/nexus/hardware-configuration.nix ] ++ nexusCommonModules;
     };
-
-    nixosConfigurations.nous = nixpkgs.lib.nixosSystem {
-      inherit system;
-      modules = [
-        ./hosts/nous/hardware-configuration.nix
-        ./hosts/nous/host-config.nix
-
-        ./modules/core/users.nix
-        ./modules/hardware/amd-strix-halo.nix
-        ./modules/ai/ollama-vulkan.nix
-        ./modules/ai/llama-swap.nix
-      ];
-    };
   };
 }
