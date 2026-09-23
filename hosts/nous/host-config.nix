@@ -46,6 +46,17 @@
     # bei Bedarf lokal mit `passwd` ändern.
   };
 
+  users.users.medienbauer = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8xgLMh3+nKDAvbXuqoYTKePGOGZo0W9w34fOldirAn medienbauer@mephisto-darwin26"
+    ];
+    # Passwort wurde am 20.08.2026 manuell per chpasswd gesetzt (initialPassword
+    # "changeme" nur für den allerersten Boot verwendet) — nicht Nix-verwaltet,
+    # bei Bedarf lokal mit `passwd` ändern.
+  };
+
   services.openssh = {
     enable = true;
     settings = {
