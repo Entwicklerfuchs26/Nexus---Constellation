@@ -115,39 +115,16 @@ in {
   # einmal über praktisch das gesamte Root-Dateisystem -- macht jeden
   # künftigen nixos-rebuild switch auf nexus spürbar länger. Bewusster
   # Trade-off für "wirklich überall", nicht übersehen.
-  system.activationScripts.sojusReadAccessEverywhere = {
-    deps = [ "users" ];
-    text = ''
-      ACL=${pkgs.acl}/bin/setfacl
-      FIND=${pkgs.findutils}/bin/find
-
-      for entry in /*; do
-        name=$(basename "$entry")
-        case "$name" in
-          proc|sys|dev|run|nix|lost+found|root) continue ;;
-        esac
-        [ -d "$entry" ] || continue
-
-        # rX: Lesen+Traversieren, aber keine Datei wird dadurch neu
-        # ausführbar gemacht, die es vorher nicht schon war.
-        $FIND "$entry" -xdev \( \
-            -path '*/.ssh' -o \
-            -path '/etc/ssh' -o \
-            -path '*/.gnupg' -o \
-            -path '*/.config/kdeconnect' -o \
-            -path '*/.claude/daemon' -o \
-            -path '/var/lib/sssd' -o \
-            -path '/var/lib/samba/private' -o \
-            -iname '*.pem' -o \
-            -iname '*.key' -o \
-            -iname 'id_ed25519*' -o \
-            -iname 'id_rsa*' -o \
-            -iname 'id_ecdsa*' \
-          \) -prune -o -exec $ACL -m u:sojus:rX,d:u:sojus:rX {} + \
-          2>/dev/null || true
-      done
-    '';
-  };
+  # ── #193/B-62 (26.09.2026): Breite Leserechte ENTFERNT ──────────────────────
+  # Der frühere `sojusReadAccessEverywhere`-activationScript (rekursives setfacl
+  # u:sojus:rX über fast das ganze FS) leakte Credentials (u.a. .claude/.credentials.json)
+  # und brach via geerbter Default-ACLs LDAP/sanoid. Kein Breit-Grant mehr — sojus
+  # liest /etc/nixos ohnehin (world-readable). Braucht der Agent später einen
+  # bestimmten Pfad: eng über Gruppe / systemd BindReadOnlyPaths, NICHT per ACL
+  # ("Rechte dem Dienst, nicht den Dateien", CSA-Konzept 4a).
+  # EINMALIG NACH DEPLOY (root): vom alten Script gesetzte Rest-ACLs bereinigen:
+  #   sudo setfacl -R -x u:sojus,d:u:sojus /etc /home /var /srv /opt 2>/dev/null
+  # (danach sshd/sssd/sanoid prüfen; siehe scratchpad/block-prep-nexus.md)
 
   # ── safe-rebuild.sh deployen via Activation Script ───────────────────────────
   # Wird bei jedem nixos-rebuild switch aktuell gehalten.

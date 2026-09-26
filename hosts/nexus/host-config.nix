@@ -40,7 +40,11 @@
   }];
 
   services.openssh.enable = true;
-  services.openssh.settings.PasswordAuthentication = true;
+  # #197 (26.09.2026): SSH nur mit Key (nexus = wahrscheinlichste Einbruchstelle).
+  # DEPLOY-SICHERHEIT: beim Rebuild eine zweite SSH-Sitzung offen halten, bis
+  # Key-Login bestätigt ist (lokale Konsole als Fallback).
+  services.openssh.settings.PasswordAuthentication = false;
+  services.openssh.settings.KbdInteractiveAuthentication = false;
 
   # Sternenhof Root-CA – Pfad muss auf lokale certs/ im Config-Repo zeigen
   security.pki.certificateFiles = [ ../../certs/sternenhof-ca-2026.crt ];
@@ -92,7 +96,11 @@
     options = [ "defaults" "nofail" "noauto" ];
   };
 
-  networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 8765 ];
+  # #197 (26.09.2026): global offene Ports entfernt — 8080/8081/8888/8765 stale
+  # (nichts lauscht), 7777 (ambient-daemon) soll an localhost binden. Samba nicht
+  # mehr global (war WAN-fähig), sondern nur auf dem LAN-Interface (Scanner bleibt).
+  networking.firewall.allowedTCPPorts = [ ];
+  networking.firewall.interfaces.${userHardware.networkInterface}.allowedTCPPorts = [ 139 445 ];
 
   # SSSD LDAP-Konfiguration (aus modules/core/ldap.nix ausgelagert)
   services.sssd.config = lib.mkIf userConfig.ldap.enable ''
@@ -126,7 +134,7 @@
   # `sudo smbpasswd -a <username>` setzen (nicht das Login-PW).
   services.samba = {
     enable = true;
-    openFirewall = true;
+    openFirewall = false;   # #197: nicht global; LAN-Ports via firewall.interfaces (s.o.)
     settings = {
       global = {
         "workgroup" = "WORKGROUP";
