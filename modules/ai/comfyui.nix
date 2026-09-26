@@ -267,15 +267,20 @@ in
   # unnötig teuer.
   system.activationScripts.comfyuiSetup = {
     text = ''
-      if [ ! -d "${comfyuiDir}/.git" ]; then
+      # #183 (26.09.2026): idempotent — nur in leeres/nicht vorhandenes Verzeichnis
+      # klonen. /data/comfyui ist eine Altlast (kein git-Repo) → git clone brach
+      # bei JEDEM Rebuild ab ("Zielpfad existiert bereits und ist nicht leer").
+      if [ ! -d "${comfyuiDir}/.git" ] && [ -z "$(ls -A "${comfyuiDir}" 2>/dev/null)" ]; then
         echo "[ComfyUI] Initialisiere ${comfyuiDir}..."
         mkdir -p "${comfyuiDir}"
         ${pkgs.git}/bin/git clone https://github.com/comfyanonymous/ComfyUI.git "${comfyuiDir}"
         chown -R fuchs:users "${comfyuiDir}"
+      elif [ ! -d "${comfyuiDir}/.git" ]; then
+        echo "[ComfyUI] ${comfyuiDir} existiert schon (kein git-Repo) — Klonen übersprungen (Altlast #158/#183)."
       fi
 
       MANAGER_DIR="${comfyuiDir}/custom_nodes/ComfyUI-Manager"
-      if [ ! -d "$MANAGER_DIR/.git" ]; then
+      if [ ! -d "$MANAGER_DIR/.git" ] && [ -z "$(ls -A "$MANAGER_DIR" 2>/dev/null)" ]; then
         echo "[ComfyUI] Installiere ComfyUI-Manager..."
         ${pkgs.git}/bin/git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$MANAGER_DIR"
         chown -R fuchs:users "$MANAGER_DIR"
