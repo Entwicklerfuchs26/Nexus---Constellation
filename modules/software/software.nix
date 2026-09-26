@@ -16,6 +16,15 @@ let
     '';
   };
 in {
+  # Vivaldi Managed Policy: Suchmaschinen-Vorschläge in der Adressleiste AUS.
+  # Deklarativ + reinstall-fest (an beiden Vivaldi-Policy-Pfaden abgelegt).
+  # Vivaldis EIGENE Adressfeld-Autovervollständigung (Verlauf/Lesezeichen) ist ein
+  # Profil-Toggle (Einstellungen -> Adressleiste), nicht per Policy -> einmal manuell.
+  environment.etc."vivaldi/policies/managed/nexus.json".text =
+    builtins.toJSON { SearchSuggestEnabled = false; };
+  environment.etc."opt/vivaldi/policies/managed/nexus.json".text =
+    builtins.toJSON { SearchSuggestEnabled = false; };
+
   # flatpak
   services.flatpak.enable = true;
   xdg.portal = {
