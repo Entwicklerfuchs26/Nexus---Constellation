@@ -92,7 +92,7 @@
     options = [ "defaults" "nofail" "noauto" ];
   };
 
-  networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 ];
+  networking.firewall.allowedTCPPorts = [ 8080 8081 8888 7777 8765 ];
 
   # SSSD LDAP-Konfiguration (aus modules/core/ldap.nix ausgelagert)
   services.sssd.config = lib.mkIf userConfig.ldap.enable ''
@@ -105,8 +105,9 @@
     auth_provider = ldap
     ldap_uri = ${userConfig.ldap.uri}
     ldap_search_base = ${userConfig.ldap.searchBase}
-    ldap_bind_dn = ${userConfig.ldap.bindDn}
-    ldap_bind_authtok_type = password
+    ldap_default_bind_dn = cn=reader,ou=roles,dc=sternenhof,dc=space
+    ldap_default_authtok_type = password
+    ldap_default_authtok = $SSSD_LDAP_DEFAULT_AUTHTOK
     ldap_user_object_class = inetOrgPerson
     ldap_user_name = uid
     enumerate = true
