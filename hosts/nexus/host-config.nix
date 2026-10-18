@@ -18,7 +18,15 @@
 
   networking.interfaces.${userHardware.networkInterface} = {
     wakeOnLan.enable = true;
+    useDHCP = false;
+    ipv4.addresses = [{
+      address = userConfig.nexusIp;
+      prefixLength = 24;
+    }];
   };
+
+  networking.defaultGateway = "192.168.1.1";
+  networking.nameservers = [ "192.168.1.1" ];
 
   security.sudo.extraRules = [{
     users = [ userConfig.username ];
@@ -100,7 +108,9 @@
   # (nichts lauscht), 7777 (ambient-daemon) soll an localhost binden. Samba nicht
   # mehr global (war WAN-fähig), sondern nur auf dem LAN-Interface (Scanner bleibt).
   networking.firewall.allowedTCPPorts = [ ];
-  networking.firewall.interfaces.${userHardware.networkInterface}.allowedTCPPorts = [ 139 445 ];
+  # 139/445 = Samba (Scanner). 5173 = skwd-wall-sync Vite-Dev-Server fürs
+  # Handy-Live-Reload -- nur auf dem LAN-Interface offen, nicht ins WAN.
+  networking.firewall.interfaces.${userHardware.networkInterface}.allowedTCPPorts = [ 139 445 5173 ];
 
   # SSSD LDAP-Konfiguration (aus modules/core/ldap.nix ausgelagert)
   services.sssd.config = lib.mkIf userConfig.ldap.enable ''
@@ -127,6 +137,24 @@
     device = "/dev/disk/by-uuid/${userHardware.disks.gamesUuid}";
     fsType = "ext4";
     options = [ "defaults" "nofail" "noauto" "x-systemd.automount" "x-systemd.device-timeout=5" ];
+  };
+
+  # Alt-ACLs vom (26.09.2026 entfernten) breiten setfacl-Lauf brechen Samba:
+  # /var/lib/samba/private/msg.sock + /var/log/samba/cores stehen auf 0750 mit
+  # geerbter POSIX-ACL ("+"), Samba verlangt beim Start exakt 0700 und scheitert
+  # sonst (nmbd/smbd/winbindd failed). Bei jedem Rebuild idempotent geradeziehen
+  # -- eng auf diese zwei Pfade begrenzt, kein rekursiver Lauf. Läuft als
+  # activationScript VOR dem Dienst-(Neu)start.
+  system.activationScripts.sambaDirPerms = {
+    deps = [ ];
+    text = ''
+      for d in /var/lib/samba/private/msg.sock /var/log/samba/cores; do
+        if [ -d "$d" ]; then
+          ${pkgs.acl}/bin/setfacl -b "$d" 2>/dev/null || true
+          chmod 0700 "$d"
+        fi
+      done
+    '';
   };
 
   # Samba-Freigabe für Netzwerk-Scan (Epson "Scan to Folder"): Drucker legt

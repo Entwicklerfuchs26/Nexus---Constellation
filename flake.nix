@@ -114,6 +114,7 @@
         # Module werden hier progressiv eingebunden:
         ./modules/core/base.nix
         ./modules/core/users.nix
+        ./modules/core/updates.nix
         ./modules/hardware/nvidia.nix
         ./modules/hardware/tablet.nix
         ./modules/core/printing.nix
@@ -159,6 +160,9 @@
         ./hosts/nexus/hardware-configuration-1tb.nix
         ./hosts/nexus/zfs-extra.nix
         ./hosts/nexus/zfs-snapshot.nix
+        ./hosts/nexus/skwd-project-backup.nix
+        ./hosts/nexus/orbit-dev.nix
+        ./hosts/nexus/wireguard-animus.nix
       ] ++ nexusCommonModules;
     };
 
