@@ -18,15 +18,16 @@
       url = "git+https://codeberg.org/LGFae/awww";
     };
 
-    # Lokal gepatcht (Zombie-Reap-Fix für ManagedProcess, siehe vendor/skwd-daemon/PATCHES.md)
-    # statt github:liixini/skwd-daemon — Rev 36f165a68611dfc55f1878ddd34491cdb6e22a44 + Patch.
-    skwd-daemon = {
-      url = "path:./vendor/skwd-daemon";
-    };
-
+    # skwd-wall v2 (26.10.2026): kompletter Rust-Rewrite (iced+wgpu+Vulkan).
+    # Der Default-Branch `v2` ist ein dünner Wrapper, der die vorgebauten,
+    # GPG-signierten Binär-Pakete aus dem Branch `nix` re-exportiert
+    # (packages/checks/nixosModules). Kein eigener Rust-Compile.
+    # Modul: services.skwd-deck.enable (Daemon = skwd-walld, Engine = skwd-paper,
+    # Suche = skwd-lens). Löst die alte QML-Generation (skwd-daemon v0.1.0) ab.
+    # Der alte Vendor-Fork vendor/skwd-daemon (Zombie-Reap-Patch) ist damit
+    # obsolet und nicht mehr als Input eingebunden (Ordner bleibt als Referenz).
     skwd-wall = {
       url = "github:liixini/skwd-wall";
-      inputs.skwd-daemon.follows = "skwd-daemon";
     };
 
     agenix = {
@@ -83,7 +84,7 @@
     # ki-modules.url = "github:Entwicklerfuchs26/ki-modules";
   };
 
-  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, custom-fonts, aniworld-dl-src, aniworld-gui-src, user-data, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-wall, agenix, custom-fonts, aniworld-dl-src, aniworld-gui-src, user-data, ... }@inputs:
   let
     system = "x86_64-linux";
 
@@ -163,7 +164,7 @@
     # GUI/Treiber-Mismatch nach dem Switch).
     nixosConfigurations.nexus = nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
+      specialArgs = { inherit inputs quickshell awww skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
       modules = [
         ./hosts/nexus/hardware-configuration-1tb.nix
         ./hosts/nexus/zfs-extra.nix
@@ -178,7 +179,7 @@
     # NICHT mehr "nexus". Explizit anwählen: --flake ...#nexus-512-fallback
     nixosConfigurations.nexus-512-fallback = nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit inputs quickshell awww skwd-daemon skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
+      specialArgs = { inherit inputs quickshell awww skwd-wall custom-fonts aniworld-dl-src aniworld-gui-src userConfig userHardware; };
       modules = [ ./hosts/nexus/hardware-configuration.nix ] ++ nexusCommonModules;
     };
   };

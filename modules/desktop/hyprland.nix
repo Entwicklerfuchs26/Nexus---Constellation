@@ -1,4 +1,4 @@
-{ config, pkgs, lib, quickshell, awww, skwd-daemon, ... }:
+{ config, pkgs, lib, quickshell, awww, ... }:
 
 {
   programs.hyprland = {
@@ -94,6 +94,9 @@ environment.etc."sddm/themes/sddm-astronaut-theme/Themes/astronaut.conf".text = 
 '';
 
 
-programs.skwd-wall.enable = true;
+# skwd-wall v2: aktiviert die Suite (skwd-wall-Picker, skwd-walld-Daemon,
+# skwd-paper-Engine, skwd-lens + SigLIP2-Modell). Steam/WE (skwd-deck-steamworks,
+# unfree) bewusst NICHT via extraPackages -- erst Bilder/Videos, WE als Politur.
+services.skwd-deck.enable = true;
 
 }

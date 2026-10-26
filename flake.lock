@@ -215,49 +215,18 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1784796856,
-        "narHash": "sha256-wWFrV5/Qbm+lyt5x20E/bSbfJiGKMo4RCxZV8cl/WZI=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "e2587caef70cea85dd97d7daab492899902dbf5d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
-        "lastModified": 1784497964,
-        "narHash": "sha256-vlHUuqAcbcH2RKmHbPiuQzbv1pnzzavXnI62RD0bqCU=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "241313f4e8e508cb9b13278c2b0fa25b9ca27163",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_5": {
-      "locked": {
-        "lastModified": 1768127708,
-        "narHash": "sha256-1Sm77VfZh3mU0F5OqKABNLWxOuDeHIlcFjsXeeiPazs=",
+        "lastModified": 1787736819,
+        "narHash": "sha256-cV5xEJJK3BvhU8rEd4mC9UsmDi5qscv/kzGPhBRC5WA=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "ffbc9f8cbaacfb331b6017d5a5abb21a492c9a38",
+        "rev": "9fbb54b33e91ee4ca368e35a78e0613c720600b3",
         "type": "github"
       },
       "original": {
-        "id": "nixpkgs",
+        "owner": "NixOS",
         "ref": "nixos-unstable",
-        "type": "indirect"
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "quickshell": {
@@ -280,21 +249,22 @@
         "type": "github"
       }
     },
-    "quickshell_2": {
+    "release": {
       "inputs": {
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1783673918,
-        "narHash": "sha256-cFG5vnmjJcZRVCSUaqQLOdwkX6iqF6bY8IvvmBSGSRs=",
-        "owner": "quickshell-mirror",
-        "repo": "quickshell",
-        "rev": "4df562dfb2475a9057f0f33a8db75808efad8670",
+        "lastModified": 1792102654,
+        "narHash": "sha256-dNISNxw7+ehLeaA+XBJzUjV24ik6Oibce6C0RxzzZns=",
+        "owner": "liixini",
+        "repo": "skwd-wall",
+        "rev": "d9142ad9e23bf33390e3fea38a5ce45a6fc286da",
         "type": "github"
       },
       "original": {
-        "owner": "quickshell-mirror",
-        "repo": "quickshell",
+        "owner": "liixini",
+        "ref": "nix",
+        "repo": "skwd-wall",
         "type": "github"
       }
     },
@@ -309,7 +279,6 @@
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
         "quickshell": "quickshell",
-        "skwd-daemon": "skwd-daemon",
         "skwd-wall": "skwd-wall",
         "user-data": "user-data"
       }
@@ -356,34 +325,16 @@
         "type": "github"
       }
     },
-    "skwd-daemon": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
-      },
-      "locked": {
-        "path": "./vendor/skwd-daemon",
-        "type": "path"
-      },
-      "original": {
-        "path": "./vendor/skwd-daemon",
-        "type": "path"
-      },
-      "parent": []
-    },
     "skwd-wall": {
       "inputs": {
-        "nixpkgs": "nixpkgs_4",
-        "quickshell": "quickshell_2",
-        "skwd-daemon": [
-          "skwd-daemon"
-        ]
+        "release": "release"
       },
       "locked": {
-        "lastModified": 1783964119,
-        "narHash": "sha256-k/1NQCZihqf1VDkQadEN5lqfN5zltI0P4kV7OsDMpgU=",
+        "lastModified": 1792055505,
+        "narHash": "sha256-iJ26vpv4KvLGvKd+Z6wQnRpNr6/V98xTyz0kB43aEXE=",
         "owner": "liixini",
         "repo": "skwd-wall",
-        "rev": "74be65663538ee6175ecc73f896a9d6229d4b612",
+        "rev": "780f2d3f53025318cbbaff1d1aa369e622e5e8fd",
         "type": "github"
       },
       "original": {
