@@ -17,3 +17,7 @@ vpn-userdata/*
 # falls doch mal jemand eine echte config.nix/hardware.nix hier reinlegt.
 user/*
 !user/*.example.nix
+
+# Python-Bytecode (Build-Artefakt)
+__pycache__/
+*.pyc

@@ -15,6 +15,11 @@ let
       wrapProgram $out/bin/krita --set QT_QPA_PLATFORM xcb
     '';
   };
+
+  # foto2mesh: Fotos im Ordner -> texturiertes 3D-Modell via Meshroom (CUDA, Docker).
+  # Skript als File eingelesen -> kein Nix-${}-Escaping. Braucht virtualisation.docker.
+  foto2mesh = pkgs.writeShellScriptBin "foto2mesh" (builtins.readFile ../../pkgs/foto2mesh.sh);
+  foto2mesh-3dm = pkgs.writeShellScriptBin "3dm" ''exec ${foto2mesh}/bin/foto2mesh "$@"'';
 in {
   # Vivaldi Managed Policy: Suchmaschinen-Vorschläge in der Adressleiste AUS.
   # Deklarativ + reinstall-fest (an beiden Vivaldi-Policy-Pfaden abgelegt).
@@ -72,8 +77,15 @@ programs.obs-studio = {
 
     # Grafik & 3D
     blender
+    # freecad – aus nixpkgs 26.11 (Rev 20260719) NICHT baubar: vtk-9.5.2 scheitert
+    #   mit GCC 15 (vtkGDALRasterReader.cxx, CSLConstList->char**). Stattdessen per
+    #   Flatpak installiert: org.freecad.FreeCAD. Wieder aktivieren, sobald nixpkgs vtk fixt.
     krita-xwayland
     darktable
+
+    # Fotogrammetrie: Fotos -> 3D-Modell (Meshroom/CUDA via Docker)
+    foto2mesh
+    foto2mesh-3dm
 
     # Media
     vlc

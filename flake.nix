@@ -35,10 +35,18 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    sojus-core = {
-      url = "path:/home/fuchs/sojus-core";
+    # An Anime Game Launcher (Genshin Impact u.a.) -- deklarativ auf NixOS.
+    # Spieldaten liegen bereits auf /mnt/games/AnimeGameLauncher (alte Flatpak-
+    # Installation); hier kommt nur das Launcher-Programm deklarativ dazu.
+    # Binärcache ezkea.cachix.org siehe modules/software/gaming.nix.
+    aagl = {
+      url = "github:ezKEa/aagl-gtk-on-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # sojus-core 20.10.2026 entfernt: die nexus-MCP-Module sind nach
+    # modules/ai/sojus-mcp/ kopiert (sojus-core bleibt als Repo bestehen,
+    # nexus haengt nicht mehr an /home/fuchs/sojus-core).
 
     # Persönliche/maschinenspezifische Werte (Username, Domains, Hardware-
     # IDs) -- bewusst außerhalb des Git-Repos unter /etc/nixos/user/, aus
@@ -75,7 +83,7 @@
     # ki-modules.url = "github:Entwicklerfuchs26/ki-modules";
   };
 
-  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, sojus-core, custom-fonts, aniworld-dl-src, aniworld-gui-src, user-data, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, quickshell, awww, skwd-daemon, skwd-wall, agenix, custom-fonts, aniworld-dl-src, aniworld-gui-src, user-data, ... }@inputs:
   let
     system = "x86_64-linux";
 
@@ -109,7 +117,7 @@
 
         skwd-wall.nixosModules.default
         agenix.nixosModules.default
-        sojus-core.nixosModules.nexus
+        ./modules/ai/sojus-mcp/nexus/default.nix
 
         # Module werden hier progressiv eingebunden:
         ./modules/core/base.nix

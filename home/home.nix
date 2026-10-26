@@ -25,6 +25,8 @@
       ./nexus-eq.nix
       ./headphone-limiter.nix
       ./chatterbox-tts.nix
+      ./anime-game-launcher.nix
+      ./screen-coach.nix
     ];
     home.packages = with pkgs; [
       vivaldi
@@ -52,7 +54,7 @@
         # rebuild klaglos mit stundenaltem, unsichtbar veraltetem Stand
         # (live entdeckt 14.09.2026, gleiches Muster wie das bekannte
         # sojus-core-Problem auf darwin26).
-        rebuild = "nix flake update --flake /etc/nixos/nixos-config user-data sojus-core && sudo nixos-rebuild switch --flake /etc/nixos/nixos-config#nexus";
+        rebuild = "nix flake update --flake /etc/nixos/nixos-config user-data && sudo nixos-rebuild switch --flake /etc/nixos/nixos-config#nexus";
         update = "sudo nix flake update /etc/nixos";
         config = "cd /etc/nixos";
         ssh = "TERM=xterm-256color ssh -t";

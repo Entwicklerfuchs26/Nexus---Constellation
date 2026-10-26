@@ -26,7 +26,13 @@
   };
 
   networking.defaultGateway = "192.168.1.1";
-  networking.nameservers = [ "192.168.1.1" ];
+  # DNS primär über darwin26 (192.168.1.26) -- dessen dnsmasq liefert den
+  # StevenBlack-Adblock-Filter und löst sternenhof.space heimnetzweit auf.
+  # Router (192.168.1.1) nur als Fallback, falls darwin26 aus ist, damit
+  # nexus dann nicht komplett ohne DNS dasteht. Die statische
+  # networking.hosts-Tabelle unten bleibt als Sicherheitsnetz für die
+  # internen Dienst-Namen bestehen (zeigt ohnehin auf homeserverIp = .26).
+  networking.nameservers = [ "192.168.1.26" "192.168.1.1" ];
 
   security.sudo.extraRules = [{
     users = [ userConfig.username ];

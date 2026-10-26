@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Screen-Coach "Auge" via Claude-CLI (Pro/Max-Konto, kein API-Key noetig).
+# Schlank gehalten: eigenes, vertrauenswuerdiges Arbeitsverzeichnis, MCP aus,
+# guenstigeres Modell. Austauschbar -- screen-coach ruft das hier ueber
+# $SCREEN_COACH_BRAIN auf; eine lokale Sojus-Variante kommt spaeter daneben.
+#
+# Aufruf:  screen-coach-brain-claude "<Aufgabe>" <screenshot.png> <breite> <hoehe>
+# Ausgabe: eine Zeile JSON {"x":int,"y":int,"label":str,"speech":str}
+set -euo pipefail
+
+TASK="${1:-}"; SHOT="${2:-}"; W="${3:-1920}"; H="${4:-1080}"
+MODEL="${SCREEN_COACH_MODEL:-sonnet}"
+
+WORK="$HOME/.local/share/screen-coach/work"
+mkdir -p "$WORK"
+cp -f "$SHOT" "$WORK/shot.png"
+printf '{}' > "$WORK/empty-mcp.json"
+
+PROMPT="Du bist ein praeziser Bildschirm-Coach. Lies das Bild ./shot.png (${W}x${H} Pixel, ein Vollbild-Screenshot). Aufgabe des Nutzers: \"${TASK}\". Finde das EINE UI-Element (Knopf, Menuepunkt, Eingabefeld), auf das als Naechstes geklickt werden soll. Antworte AUSSCHLIESSLICH mit einer einzigen Zeile gueltigem JSON, nichts davor oder danach: {\"x\":<ganzzahl>,\"y\":<ganzzahl>,\"label\":\"kurzer deutscher Hinweis, hoechstens 6 Woerter\",\"speech\":\"ein gesprochener deutscher Satz, der sagt wohin klicken\"}. x,y = Pixel-Mittelpunkt des Elements im Bild. Findest du es nicht, setze x und y auf -1 und erklaere im speech-Feld kurz warum."
+
+cd "$WORK"
+RES="$(claude -p "$PROMPT" \
+        --model "$MODEL" \
+        --output-format json \
+        --allowedTools Read \
+        --strict-mcp-config --mcp-config "$WORK/empty-mcp.json" \
+        --dangerously-skip-permissions 2>/dev/null || true)"
+
+python3 - "$RES" <<'PY'
+import sys, json, re
+raw = sys.argv[1] if len(sys.argv) > 1 else ""
+text = raw
+try:
+    obj = json.loads(raw)
+    if isinstance(obj, dict) and "result" in obj:
+        text = obj["result"]
+except Exception:
+    pass
+m = re.search(r'\{.*\}', text, re.S)
+fallback = {"x": -1, "y": -1, "label": "", "speech": "Ich habe keine klare Antwort bekommen."}
+try:
+    d = json.loads(m.group(0)) if m else fallback
+    print(json.dumps({
+        "x": int(d.get("x", -1)),
+        "y": int(d.get("y", -1)),
+        "label": str(d.get("label", ""))[:80],
+        "speech": str(d.get("speech", ""))[:300],
+    }, ensure_ascii=False))
+except Exception:
+    print(json.dumps(fallback, ensure_ascii=False))
+PY

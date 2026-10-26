@@ -11,6 +11,7 @@
       {
         # manus-Hub
         publicKey = "bAJab1TbDnXON/4sOtdSuvPvfsl1UJc3XbO49wSAAng=";
+        presharedKeyFile = "/home/fuchs/wg-configs/nexus-manus.psk";  # Defense-in-Depth (14.10.2026)
         allowedIPs = [ "10.10.0.0/24" ];
         endpoint = "192.168.1.45:51820"; # Heimnetz-Test; spaeter MyFRITZ!-Adresse
         persistentKeepalive = 25;

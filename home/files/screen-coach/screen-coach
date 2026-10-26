@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Screen-Coach — Hotkey-Ablauf: Screenshot -> KI findet Klickpunkt ->
+# quickshell-Overlay malt Ring/Pfeil/Text dorthin -> TTS spricht (best-effort).
+# Gebunden an Super + Taste links der 1 (siehe home/files/hyprland.conf).
+set -euo pipefail
+
+RUN=/tmp/screen-coach
+mkdir -p "$RUN"
+QML="$HOME/.config/screen-coach/shell.qml"
+
+# 1) Fokussierten Monitor ermitteln
+read -r MON W H SC < <(hyprctl monitors -j | python3 -c '
+import json,sys
+m=json.load(sys.stdin); f=next((x for x in m if x.get("focused")),m[0])
+print(f["name"], f["width"], f["height"], f.get("scale",1))')
+
+# 2) Screenshot des fokussierten Monitors
+grim -o "$MON" "$RUN/shot.png"
+
+# 3) Aufgabe abfragen (rofi-Eingabe; spaeter via Sojus-Sprache ersetzbar)
+TASK="$(printf '' | rofi -dmenu -p "Wobei helfen?" -theme-str 'window{width:45%;} entry{placeholder:"z.B. wie schliesse ich dieses Fenster";}')" || exit 0
+[ -z "${TASK:-}" ] && exit 0
+
+# 4) Brain befragen (austauschbar ueber $SCREEN_COACH_BRAIN)
+BRAIN="${SCREEN_COACH_BRAIN:-screen-coach-brain-claude}"
+J="$("$BRAIN" "$TASK" "$RUN/shot.png" "$W" "$H" 2>/dev/null || true)"
+[ -z "${J:-}" ] && J='{"x":-1,"y":-1,"label":"","speech":"Es gab einen Fehler beim Nachdenken."}'
+
+# 5) target.json fuers Overlay schreiben (Monitor + Scale ergaenzen)
+python3 - "$J" "$MON" "$SC" > "$RUN/target.json" <<'PY'
+import sys, json
+try:
+    j = json.loads(sys.argv[1])
+except Exception:
+    j = {"x": -1, "y": -1, "label": "", "speech": "Antwort nicht lesbar."}
+j["mon"] = sys.argv[2]
+j["scale"] = float(sys.argv[3])
+j["ttl"] = 12
+print(json.dumps(j, ensure_ascii=False))
+PY
+
+# 6) Overlay (neu) starten -> frisches Ziel
+pkill -f "quickshell -p ${QML}" 2>/dev/null || true
+setsid quickshell -p "$QML" >/dev/null 2>&1 &
+
+# 7) Sprachausgabe best-effort — nur wenn der Chatterbox-Server laeuft
+SPEECH="$(python3 -c 'import json;print(json.load(open("/tmp/screen-coach/target.json")).get("speech",""))' 2>/dev/null || true)"
+if [ -n "${SPEECH:-}" ] && curl -s --max-time 1 -o /dev/null http://localhost:8004/docs 2>/dev/null; then
+  (
+    BODY="$(python3 -c 'import json,sys;print(json.dumps({"text":sys.argv[1],"voice":"default"}))' "$SPEECH")"
+    curl -s --max-time 60 -X POST http://localhost:8004/tts \
+      -H 'content-type: application/json' -d "$BODY" -o "$RUN/speech.wav" \
+      && paplay "$RUN/speech.wav"
+  ) >/dev/null 2>&1 &
+fi
+
+exit 0
