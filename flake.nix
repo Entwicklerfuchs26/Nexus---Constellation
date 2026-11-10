@@ -174,6 +174,7 @@
         ./hosts/nexus/hardware-configuration-1tb.nix
         ./hosts/nexus/zfs-extra.nix
         ./hosts/nexus/zfs-snapshot.nix
+        ./hosts/nexus/backup-alarm.nix
         ./hosts/nexus/skwd-project-backup.nix
         ./hosts/nexus/orbit-dev.nix
         ./hosts/nexus/wireguard-animus.nix
