@@ -24,6 +24,24 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
+  # Persistenzmodus (09.11.2026): Treiber bleibt geladen, kein Neu-Initialisieren
+  # zwischen GPU-Jobs (kürzere Startzeit für CUDA/ComfyUI).
+  hardware.nvidia.nvidiaPersistenced = true;
+
+  # Power-Limit auf das Karten-Maximum (RTX 2070 SUPER: Standard 215 W, max 240 W laut
+  # nvidia-smi). Innerhalb der Herstellergrenze, setzt sich bei jedem Boot neu.
+  # "-" vor dem Befehl: schlägt es fehl, bricht der Boot NICHT ab.
+  systemd.services.nvidia-power-limit = {
+    description = "NVIDIA Power-Limit auf Maximum";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "nvidia-persistenced.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "-${config.hardware.nvidia.package.bin}/bin/nvidia-smi -pl 240";
+    };
+  };
+
   # Wayland mit NVIDIA sauber konfigurieren
   hardware.graphics = {
     enable = true;

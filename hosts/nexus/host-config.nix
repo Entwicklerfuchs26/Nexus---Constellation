@@ -16,6 +16,19 @@
   boot.zfs.forceImportRoot = false;
   networking.hostId = userHardware.zfsHostId;
 
+  # ZFS-ARC deckeln (09.11.2026): ohne Limit darf er bis ~30 GiB des 31-GiB-RAM
+  # belegen und konkurriert dann mit Blender/KI-Modellen. 8 GiB reichen als Cache;
+  # der Wert ist nur eine Obergrenze (aktuell nutzt er ~6 GiB).
+  boot.kernelParams = [ "zfs.zfs_arc_max=8589934592" ];
+
+  # zram-Swap (09.11.2026): bisher gar kein Swap -> bei RAM-Spitzen (Blender + ComfyUI
+  # + Browser) droht OOM-Kill. Komprimiert im RAM, 25 % = ~8 GiB, kostet nur bei Nutzung.
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 25;
+  };
+
   networking.interfaces.${userHardware.networkInterface} = {
     wakeOnLan.enable = true;
     useDHCP = false;

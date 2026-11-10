@@ -37,6 +37,11 @@ pkgs.writeShellScriptBin "nexus-sys-fetcher" ''
 
   memtotal=$(${pkgs.gawk}/bin/awk '/^MemTotal:/{print $2}' /proc/meminfo)
   memavail=$(${pkgs.gawk}/bin/awk '/^MemAvailable:/{print $2}' /proc/meminfo)
+  # ZFS-ARC zaehlt Linux als "belegt", gibt ihn aber bei Bedarf bis c_min frei -> als verfuegbar werten
+  if [ -r /proc/spl/kstat/zfs/arcstats ]; then
+    arc_free_kb=$(${pkgs.gawk}/bin/awk '$1=="size"{s=$3} $1=="c_min"{m=$3} END{d=(s-m)/1024; if (d<0) d=0; printf "%d", d}' /proc/spl/kstat/zfs/arcstats)
+    memavail=$((memavail + ''${arc_free_kb:-0}))
+  fi
   ram_pct=$(${pkgs.gawk}/bin/awk -v t="$memtotal" -v a="$memavail" 'BEGIN{printf "%.1f", 100*(t-a)/t}')
   ram_gb=$(${pkgs.gawk}/bin/awk -v t="$memtotal" -v a="$memavail" 'BEGIN{printf "%.2f", (t-a)/1048576}')
 
