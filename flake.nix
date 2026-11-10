@@ -143,6 +143,7 @@
         ./modules/software/gaming.nix
         ./modules/software/docker.nix
         ./modules/software/davinci.nix
+        ./modules/software/claude-desktop.nix
         ./modules/desktop/hyprland.nix
         ./modules/ai/ollama.nix
         ./modules/ai/sojus.nix
@@ -151,6 +152,10 @@
         ./modules/ai/chatterbox-tts.nix
         ./modules/core/ldap.nix
         ./modules/software/affinity.nix
+        ./modules/software/kreativ-suite   # Adobe-Alternativen, Schalter: nexus.kreativSuite.enable
+        { nexus.kreativSuite.enable = true; }   # <- auf false setzen = Suite weg
+        ./modules/software/artcraft-suite   # ArtCraft (Rust-Adobe-Nachbau, Alpha), Schalter: nexus.artcraft.enable
+        { nexus.artcraft.enable = true; }   # <- auf false setzen = ArtCraft weg
         ./home/home.nix
     ];
   in
