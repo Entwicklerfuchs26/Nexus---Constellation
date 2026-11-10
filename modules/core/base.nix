@@ -38,6 +38,29 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Aufräumen (10.11.2026): nur die letzten 5 System-Generationen behalten.
+  # Vorher gab es keine Regel -> 28 Generationen + ~38.000 tote Pakete (rpool/nix ~97 GB).
+  # configurationLimit begrenzt nur die Boot-Einträge, der wöchentliche Dienst löscht
+  # die alten Generationen wirklich und gibt den Platz per Garbage-Collection frei.
+  boot.loader.systemd-boot.configurationLimit = 5;
+  systemd.services.nix-keep-last-5 = {
+    description = "Alte NixOS-Generationen löschen (letzte 5 bleiben) + Garbage-Collection";
+    serviceConfig.Type = "oneshot";
+    path = [ config.nix.package ];
+    script = ''
+      nix-env -p /nix/var/nix/profiles/system --delete-generations +5
+      nix-collect-garbage
+    '';
+  };
+  systemd.timers.nix-keep-last-5 = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;
+      RandomizedDelaySec = "1h";
+    };
+  };
+
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = true;
   hardware.bluetooth.settings = {
