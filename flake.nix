@@ -176,7 +176,7 @@
         ./hosts/nexus/zfs-snapshot.nix
         ./hosts/nexus/backup-alarm.nix
         ./hosts/nexus/skwd-project-backup.nix
-        ./hosts/nexus/orbit-dev.nix
+        # ./hosts/nexus/orbit-dev.nix  # 11.11.2026 aus: belegte Port 5173, den die plantage-Dev-APK braucht
         ./hosts/nexus/wireguard-animus.nix
       ] ++ nexusCommonModules;
     };
